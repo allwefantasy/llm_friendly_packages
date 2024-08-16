@@ -36,6 +36,8 @@ auto-coder.chat
 
 你可以在 [./src/example1](./src/example1) 中找到这个例子的结果。
 
+这里还有一个更复杂的案例： [让大模型使用 byzerllm 从 0 实现RAG应用](https://uelng8wukz.feishu.cn/wiki/KlHVwCilDi7y3LkSRblcAfqynpM)
+
 ## 如何提交一个库
 
 可以直接给该项目提交一个 PR , 添加一个markdown文件即可，文件的路径如下：

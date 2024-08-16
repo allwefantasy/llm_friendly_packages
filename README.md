@@ -36,6 +36,8 @@ For example, if I want to develop a translation application, I can program like 
 
 You can find the result of this example in [./src/example1](./src/example1).
 
+Here is a more complex example： [让大模型使用 byzerllm 从 0 实现RAG应用](https://uelng8wukz.feishu.cn/wiki/KlHVwCilDi7y3LkSRblcAfqynpM)
+
 ## How to Submit a Library
 
 You can directly submit a PR to this project, just add a markdown file. The file path should be as follows:
