@@ -15,15 +15,44 @@ byzer-llm 库是一个大模型友好库的案例，[byzer-llm](https://github.c
 
 在 auto-coder.chat 中我们可以如下方式使用该库：
 
+打开 IDE 的 terminal，输入如下命令：
+
+```shell
+auto-coder.chat
+```
+
+添加一个 byzer-llm 库：
 ```shell
 /lib /add byzer-llm
 ```
 
-接着，我们就可以使用 byzer-llm 库编程。
+现在，我们就可以使用大模型自动生成基于 byzer-llm 的代码了。
 
 比如，我想开发一个翻译应用，我可以这样编程：
 
 ```shell
 /coding 在 src/example1 中开发一个翻译 Rest 服务，使用 fastapi, 接口接受一段文本和一个目标语言，返回翻译后的文本。请使用 prompt 函数来实现,使用 deepseek_chat模型，并且添加一个使用 README.md.
+```
+
+你可以在 [./src/example1](./src/example1) 中找到这个例子的结果。
+
+## 如何提交一个库
+
+可以直接给该项目提交一个 PR , 添加一个markdown文件即可，文件的路径如下：
+
+```
+./github.com/作者名/库名/README.md
+```
+
+比如我提交了 byzer-llm 库的文档，那么路径就是：
+
+```
+./github.com/allwefantasy/byzer-llm/README.md
+```
+
+之后其他人就可以直接在 auto-coder.chat 中使用如下方式使用该库了：
+
+```shell
+/lib /add byzer-llm
 ```
 
