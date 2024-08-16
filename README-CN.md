@@ -24,6 +24,6 @@ byzer-llm 库是一个大模型友好库的案例，[byzer-llm](https://github.c
 比如，我想开发一个翻译应用，我可以这样编程：
 
 ```shell
-/coding 在 src/example1 中开发一个翻译 Rest 服务，使用 fastapi, 接口接受一段文本和一个目标语言，返回翻译后的文本。请使用 prompt 函数来实现。
+/coding 在 src/example1 中开发一个翻译 Rest 服务，使用 fastapi, 接口接受一段文本和一个目标语言，返回翻译后的文本。请使用 prompt 函数来实现,使用 deepseek_chat模型，并且添加一个使用 README.md.
 ```
 
