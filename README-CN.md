@@ -58,3 +58,23 @@ auto-coder.chat
 /lib /add byzer-llm
 ```
 
+## 如何验证效果
+
+你提交的文档如何验证效果，你可以将自己写好的 README.md 通过 auto-coder.chat 的 `/add_files`指令添加，然后测试。
+
+具体步骤如下：
+
+### 临时添加文件
+
+```shell
+/add_files <README_PATH>
+```
+
+### 使用 /coding 或者 /chat 指令验证文档效果
+
+```
+/coding <模拟用户如何使用你的库>
+```
+
+如果大模型无法 get 到你的意思，或者用错了，那么你可以直接修改你的 README.md 文件，会即时生效。
+
