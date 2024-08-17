@@ -40,7 +40,7 @@ Here is a more complex example： [让大模型使用 byzerllm 从 0 实现RAG�
 
 ## How to Submit a Library
 
-You can directly submit a PR to this project, just add a markdown file. The file path should be as follows:
+You can directly submit a PR to this project by adding a markdown file. The file path should be as follows:
 
 ```
 ./github.com/author_name/library_name/README.md
@@ -57,3 +57,23 @@ After that, others can directly use the library in auto-coder.chat in the follow
 ```shell
 /lib /add byzer-llm
 ```
+
+## How to Verify the Effectiveness
+
+To verify the effectiveness of your submitted documentation, you can add your prepared README.md file through the `/add_files` command in auto-coder.chat and then test it.
+
+Here are the specific steps:
+
+### Temporarily Add Files
+
+```shell
+/add_files <README_PATH>
+```
+
+### Use the /coding or /chat Command to Verify the Documentation Effectiveness
+
+```
+/coding <Simulate how a user would use your library>
+```
+
+If the large model fails to understand your intent or uses it incorrectly, you can directly modify your README.md file, which will take effect immediately.
