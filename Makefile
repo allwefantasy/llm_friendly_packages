@@ -1,7 +1,7 @@
 # Makefile for setting up ReactJS + TailwindCSS project
 
 # Variables
-PROJECT_NAME ?= my_react_project
+PROJECT_NAME ?= $(notdir $(CURDIR))
 FRONTEND_DIR = $(PROJECT_NAME)/frontend
 
 .PHONY: all create_project install_dependencies init_tailwind configure clean
