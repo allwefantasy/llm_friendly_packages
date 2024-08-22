@@ -11,8 +11,7 @@ cd frontend
 rm -rf .git
 npm install -D tailwindcss postcss autoprefixer
 npx tailwindcss init -p
-npm install axios
-npm install react-router-dom
+npm install axios react-router-dom
 npm install --save-dev @types/react-router-dom
 
 cd ..
