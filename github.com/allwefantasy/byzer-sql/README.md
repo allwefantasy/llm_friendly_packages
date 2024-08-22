@@ -1757,3 +1757,188 @@ select 1 as a as output
 ```
 
 该语句包含了一个内置的宏函数 `!hdfs`, 所以是非法的。
+
+## 注册大模型为UDF函数
+
+Byzer SQL 可以连接一个已经部署好的模型实例，然后将其转换成 SQL 函数，具体做法如下；
+
+```
+!byzerllm setup single;
+
+run command as LLM.`` where 
+action="infer"
+and reconnect="true"
+and pretrainedModelType="saas/openai"
+and udfName="deepseek_chat";
+```
+
+上面是一个固定语法方式，唯一需要修改的事 pretrainedModelType 和 udfName，pretrainedModelType 是模型类型， saas/ 表示是saas模型，反斜杠后面
+则表示模型提供商，不过很多模型提供商都可以使用 openai 接口调用。udfName 是注册的函数名，需要保持和已经部署好的模型实例同名。
+
+
+## 大模型相关的辅助 SQL 函数
+
+### llm_param 函数
+
+#### 描述
+`llm_param` 函数用于设置 LLM 的参数。
+
+#### 语法
+```sql
+llm_param(map(...))
+```
+
+#### 参数
+- `map(...)`: 一个包含键值对的映射，用于设置 LLM 的各种参数。
+
+#### 示例
+```sql
+llm_param(map(
+    "instruction", llm_prompt('...')
+))
+```
+
+#### 说明
+- 在示例中，我们设置了一个名为 "instruction" 的参数，其值由 `llm_prompt` 函数生成。
+- 可以根据需要在 map 中添加更多参数，如模型名称、温度等。
+
+### llm_prompt 函数
+
+#### 描述
+`llm_prompt` 函数用于构建发送给 LLM 的提示文本。
+
+#### 语法
+```sql
+llm_prompt('prompt_text', array(...))
+```
+
+#### 参数
+- `'prompt_text'`: 提示文本模板，可以包含占位符 `{0}`, `{1}` 等。
+- `array(...)`: 一个数组，包含用于填充提示文本模板中占位符的值。
+
+#### 示例
+```sql
+llm_prompt('
+根据下面提供的信息，回答用户的问题。
+信息上下文：
+```
+{0}
+```
+用户的问题： Byzer-SQL 是什么?
+', array(context))
+```
+
+#### 说明
+- 提示文本中的 `{0}` 将被 `array(context)` 中的值替换。
+- 可以使用多个占位符 (`{0}`, `{1}`, ...) 并在数组中提供相应的值。
+
+### llm_result 函数
+
+#### 描述
+`llm_result` 函数用于从 LLM 的响应中提取结果。
+
+#### 语法
+```sql
+llm_result(response)
+```
+
+#### 参数
+- `response`: LLM 的原始响应。
+
+#### 示例
+```sql
+select llm_result(response) as result from q3 as output;
+```
+
+#### 说明
+- 此函数通常用于从 LLM 的响应中提取有用的信息，并将其格式化为所需的输出格式。
+
+### llm_stack 函数
+
+`llm_stack` 函数是用于在多轮对话中维持上下文的一个重要工具。它的主要作用是将前一轮对话的响应与新的指令结合，以便在后续的对话中保持连贯性和上下文awareness。
+
+下面是一段示例代码：
+
+```sql
+select 
+deepseek_chat(llm_param(map(
+              "instruction",'我是威廉，请记住我是谁。'
+)))
+as response as table1;
+select llm_result(response) as result from table1 as output;
+
+select 
+deepseek_chat(llm_stack(response,llm_param(map(
+              "instruction",'请问我是谁？'
+))))
+as response from table1
+as table2;
+select llm_result(response) as result from table2 as output;
+```
+
+让我们详细分析一下这个函数的使用：
+
+1. 函数语法：
+   ```sql
+   llm_stack(previous_response, new_instruction)
+   ```
+
+2. 参数说明：
+   - `previous_response`：前一轮对话的响应。在您的例子中，这是来自 `table1` 的 `response`。
+   - `new_instruction`：新的指令，通常通过 `llm_param` 函数设置。
+
+3. 使用场景：
+   在您的例子中，`llm_stack` 被用于两轮对话中：
+   - 第一轮：介绍 "我是威廉"
+   - 第二轮：询问 "请问我是谁？"
+
+4. 工作原理：
+   - `llm_stack` 函数会将第一轮对话的响应（即模型记住了"威廉"这个身份）与第二轮的新指令（询问身份）结合起来。
+   - 这样做可以让模型在回答第二个问题时，依然记得第一轮对话中提到的信息。
+
+5. 在您的代码中的应用：
+   - 第一个查询设置了初始上下文（介绍威廉）。
+   - 第二个查询使用 `llm_stack` 来确保模型在回答 "我是谁" 的问题时，能够记住之前介绍的身份信息。
+
+通过使用 `llm_stack`，您可以创建更自然、更连贯的多轮对话，使得大语言模型能够在整个对话过程中保持上下文awareness，提供更准确和相关的回答。这在创建聊天机器人、问答系统或任何需要维持对话历史的应用中特别有用。
+
+### 模型 UDF 函数
+
+任何模型注册为 UDF 函数后，都有相同的调用方式。比如上面的 `deepseek_chat`, 语法如下:
+
+```sql
+deepseek_chat(llm_param(...))
+```
+
+
+### 辅助函数使用范例
+
+以下是一个完整的示例，展示了这三个函数的协同使用：
+
+```sql
+select "Byzer-SQL 是一门SQL语言，可以和大模型友好的协作，更高效的完成数据分析任务。" as 
+context as rag_table;
+
+select 
+deepseek_chat(llm_param(map(
+    "instruction", llm_prompt('
+根据下面提供的信息，回答用户的问题。
+信息上下文：
+```
+{0}
+```
+用户的问题： Byzer-SQL 是什么?
+', array(context))
+)))
+as response from rag_table as q3;
+
+select llm_result(response) as result from q3 as output;
+```
+
+在这个示例中：
+1. 我们首先创建了一个包含上下文信息的表 `rag_table`。
+2. 然后使用 `llm_param` 和 `llm_prompt` 构建了发送给 LLM 的指令。
+3. 将构建的指令传递给 `deepseek_chat` 函数（这可能是一个特定的 LLM 接口）。
+4. 最后，使用 `llm_result` 函数处理 LLM 的响应，提取出最终结果。
+
+通过这种方式，Byzer-SQL 能够无缝地集成 LLM 功能，使得在 SQL 环境中进行复杂的自然语言处理任务变得简单而直观。
