@@ -898,6 +898,31 @@ for code_block in code_blocks:
 ##output: ls -l        
 ```
 
+TagExtractor 工具用于对任意 `<_tag_></_tag_>` 标签对的抽取，下面是一个使用示例：
+
+```python
+from byzerllm.apps.utils import TagExtractor
+
+extractor = TagExtractor('''
+大家好
+<_image_>data:image/jpeg;base64,xxxxxx</_image_>
+                         大家好
+<_image_>data:image/jpeg;base64,xxxxxx2</_image_>
+''')
+
+v = extractor.extract()
+print(v.content[0].content)
+print(v.content[1].content)
+```
+输出为:
+
+```
+data:image/jpeg;base64,xxxxxx
+data:image/jpeg;base64,xxxxxx2
+```
+
+我们成功的将 <_image_></_image_> 标签对里的内容抽取出来了。
+
 
 ## 注意事项
 

@@ -1776,7 +1776,7 @@ and udfName="deepseek_chat";
 则表示模型提供商，不过很多模型提供商都可以使用 openai 接口调用。udfName 是注册的函数名，需要保持和已经部署好的模型实例同名。
 
 
-## 大模型相关的辅助 SQL 函数
+## 大模型相关的辅助 SQL 函数用于自然语言处理
 
 ### llm_param 函数
 
@@ -1909,36 +1909,44 @@ select llm_result(response) as result from table2 as output;
 ```sql
 deepseek_chat(llm_param(...))
 ```
-
+通过将模型 UDF 函数和其他辅助函数结合，让我们可以对SQL中的文本字段做自然语言处理，比如判断正负面情感、生成文本、回答问题等等。
 
 ### 辅助函数使用范例
 
-以下是一个完整的示例，展示了这三个函数的协同使用：
+下面我们展示如何组合这些大模型辅助函数，完成一个简单的任务：统计用户正面评论的数量。
 
 ```sql
-select "Byzer-SQL 是一门SQL语言，可以和大模型友好的协作，更高效的完成数据分析任务。" as 
+select "这个点心太好吃了" as 
 context as rag_table;
 
 select 
-deepseek_chat(llm_param(map(
-    "instruction", llm_prompt('
+llm_result(deepseek_chat(llm_param(map(
+              "instruction",llm_prompt('
+
 根据下面提供的信息，回答用户的问题。
+
 信息上下文：
 ```
 {0}
 ```
-用户的问题： Byzer-SQL 是什么?
-', array(context))
-)))
+
+用户的问题： 用户的评论是正面还是负面的。
+请只输出 “正面” 或者 “负面”
+',array(context))
+
+))))
+
 as response from rag_table as q3;
 
-select llm_result(response) as result from q3 as output;
+select count(*) as positive_counter from q3 where response like '%正面%' as output;
+
+
 ```
 
 在这个示例中：
 1. 我们首先创建了一个包含上下文信息的表 `rag_table`。
-2. 然后使用 `llm_param` 和 `llm_prompt` 构建了发送给 LLM 的指令。
+2. 然后使用 `llm_param` 和 `llm_prompt` 构建 prompt 指令。
 3. 将构建的指令传递给 `deepseek_chat` 函数（这可能是一个特定的 LLM 接口）。
-4. 最后，使用 `llm_result` 函数处理 LLM 的响应，提取出最终结果。
+4. 最后，使用 `llm_result` 函数处理 LLM 的响应，响应中会包含正面或者负面关键字。我们通过通过Like 条件过滤出正面评论。
 
 通过这种方式，Byzer-SQL 能够无缝地集成 LLM 功能，使得在 SQL 环境中进行复杂的自然语言处理任务变得简单而直观。
