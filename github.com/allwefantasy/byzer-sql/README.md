@@ -1951,11 +1951,9 @@ select count(*) as positive_counter from q3 where response like '%正面%' as ou
 
 通过这种方式，Byzer-SQL 能够无缝地集成 LLM 功能，使得在 SQL 环境中进行复杂的自然语言处理任务变得简单而直观。
 
-### 模型 UDF 函数的性能
-
-在你使用了模型 UDF 函数 select 语句中，考虑到现在模型UDF函数的普遍性能在百毫秒到秒级，可以使用 SELECT /*+ REPARTITION(10) */  这样的方式来控制分区数，这样可以提供并行性能，当用户显示的提示并行度的时候，加上上述的提示。
 
 ### 注意事项
 
 1. 务必要理解模型 UDF 函数的使用场景，仅局限对某个字段的自然语言处理上，不要滥用，大部分问题应该都通过标准的 Byzer-SQL 统计聚合来完成。
 2. llm_result 等以 llm_ 开头函数，只能配合模型 UDF 函数使用，不能单独使用。
+3. 在使用了模型UDF函数的 select 语句中，请使用hint  /*+ REPARTITION(500) */ 来提高性能，类似 SELECT /*+ REPARTITION(500) */ ，其中里面的数值 500 可以根据需求进一步使用更大的数值。
