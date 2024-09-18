@@ -1911,6 +1911,31 @@ deepseek_chat(llm_param(...))
 ```
 通过将模型 UDF 函数和其他辅助函数结合，让我们可以对SQL中的文本字段做自然语言处理，比如判断正负面情感、生成文本、回答问题等等。
 
+### 使用 Byzer-SQL 模型 UDF 函数完成图片处理
+
+gpt4o_mini_chat 是我们注册的一个多模态模型 UDF 函数，可以用来处理图片。
+
+
+```sql
+load binaryFile.`/tmp/upload/a082bf7e-c9b7-469c-a386-321fdeb74eeb_00001_.png` as images;
+
+select 
+llm_result(gpt4o_mini_chat(llm_param(
+map(
+   "instruction",to_json(array(map(
+    "image",base64(content),
+    "text","详细描述图片里都有啥"
+   )))
+              
+))))
+as response from images as table1;
+```
+
+根据上面的示例代码，可以使用 binaryFile 来加载图片(或者图片目录)，然后就可以使用 gpt4o_mini_chat 来处理了。
+注意
+1. 模型UDF函数一定要通过 llm_result 函数将其转化为文本字段才能进一步做处理。
+2. 如果用户的需求是对图片做过滤，比如过滤出图片中包含中国风的图片，可以使用类似这样的prompt: 判断图片是否为中国风，如果是请输出'YES'，否则输出'NO'，然后通过 llm_result 函数处理后的结果，再通过 like 来过滤 YES 或者 NO 的文本。
+
 ### 使用 Byzer-SQL 模型 UDF 函数完成表格文本字段的自然语言处理以及统计任务
 
 下面我们展示如何组合这些大模型辅助函数，完成一个简单的任务：统计用户正面评论的数量。
