@@ -1981,4 +1981,4 @@ select count(*) as positive_counter from q3 where response like '%正面%' as ou
 
 1. 务必要理解模型 UDF 函数的使用场景，仅局限对某个字段的自然语言处理上，不要滥用，大部分问题应该都通过标准的 Byzer-SQL 统计聚合来完成。
 2. llm_result 等以 llm_ 开头函数，只能配合模型 UDF 函数使用，不能单独使用。
-3. 在使用了模型UDF函数的 select 语句中，请使用hint  /*+ REPARTITION(500) */ 来提高性能，类似 SELECT /*+ REPARTITION(500) */ ，其中里面的数值 500 可以根据需求进一步使用更大的数值。
+3. 在使用了模型UDF函数的 select 语句中，一定要添加  /*+ REPARTITION(500) */ ，其中里面的数值 500 可以根据需求进一步使用更大的数值。
