@@ -1919,7 +1919,7 @@ gpt4o_mini_chat 是我们注册的一个多模态模型 UDF 函数，可以用�
 ```sql
 load binaryFile.`/tmp/upload/a082bf7e-c9b7-469c-a386-321fdeb74eeb_00001_.png` as images;
 
-select 
+select /*+ REPARTITION(500) */
 llm_result(gpt4o_mini_chat(llm_param(
 map(
    "instruction",to_json(array(map(
@@ -1944,7 +1944,7 @@ as response from images as table1;
 select "这个点心太好吃了" as 
 context as rag_table;
 
-select 
+select /*+ REPARTITION(500) */
 llm_result(deepseek_chat(llm_param(map(
               "instruction",llm_prompt('
 
