@@ -2026,7 +2026,14 @@ curl --location --request POST 'http://localhost:9003/run/script' \
 --header 'Content-Type: application/x-www-form-urlencoded' \
 --data-urlencode 'sql=select 1 as id as output;' \
 --data-urlencode 'owner=hello' \
---data-urlencode 'jobName=91f8e37d-cfc7-4167-b396-7f33c14bc7da'
+--data-urlencode 'jobName=91f8e37d-cfc7-4167-b396-7f33c14bc7da' \
+--data-urlencode 'includeSchema=true'
+```
+
+返回数据如下：
+
+```
+{ "schema":{"type":"struct","fields":[{"name":"id","type":"integer","nullable":false,"metadata":{}}]},"data": [{"id":1}]}
 ```
 
 
