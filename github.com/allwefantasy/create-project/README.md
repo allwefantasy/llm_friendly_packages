@@ -110,7 +110,7 @@ setup(
 
 在上面的文件中，核心有两点
 1. 通过 package_data 指定静态文件所在的目录，以及需要包含的文件。
-2. 通过 entry_points 指定可执行命令。
+2. 这个项目提供了命令行支持，通过 entry_points 指定可执行命令名称以及对应的模块。
 
 python 目录结构为项目根目录里有src,setup.py,README.md,Makefile,deploy.sh， 以及.gitignore文件。.gitignore文件里至少需要 web,logs,__pycache__,dist,build,pasted 等目录。
 
