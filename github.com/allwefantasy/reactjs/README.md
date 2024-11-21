@@ -2,7 +2,7 @@
 
 ## typescript 类型
 
-生成的代码要严格满足 typescript 类型定义。
+生成的代码要严格满足 typescript 类型定义,需要注意的代码避免 Parameter 'xxxx' implicitly has an 'any' type 之类的问题。
 
 下面是一些具体的示例：
 
