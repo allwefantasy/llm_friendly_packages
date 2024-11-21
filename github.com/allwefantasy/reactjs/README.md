@@ -44,5 +44,9 @@ typescript 编译器提示没有 select 方法。
 可以看到 e.target 被申明为 HTMLInputElement 类型，从而满足 typescript 类型定义。
 
 
+## JSX 标签闭合问题
+
+当输出 SEARCH/REPLACE 模式时，请务必确保代码合并后，标签是闭合的。
+
 
 
