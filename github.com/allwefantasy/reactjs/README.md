@@ -1,94 +1,48 @@
-# ReactJS + TailwindCSS 快速指南
+# ReactJS + TailwindCSS + Typescript 项目特别说明
 
-## 准备项目/环境
+## typescript 类型
 
-```bash
-mkdir <PROJECT_NAME>
-cd  <PROJECT_NAME>
+生成的代码要严格满足 typescript 类型定义。
 
-npx create-react-app frontend --template typescript
-cd frontend
-rm -rf .git
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
-npm install axios react-router-dom
-npm install --save-dev @types/react-router-dom
+下面是一些具体的示例：
 
-cd ..
-auto-coder init --source_dir .
+```typescript
+<input className={`text-sm truncate bg-transparent outline-none w-full ${
+		activeTerminal === terminal.id ? 'text-white' : 'text-gray-400'
+	}`}
+	value={terminal.name}
+	onDoubleClick={(e) => e.target.select()}
+	onChange={(e) => renameTerminal(terminal.id, e.target.value)}
+	onBlur={(e) => {
+		if (!e.target.value.trim()) {
+		renameTerminal(terminal.id, `Terminal ${terminal.id}`);
+		}
+	}}
+	/>
 ```
 
-tailwindcss 需要配置一下，修改 `frontend/src/index.css`,在最前面添加:
+上面的不符合 typescript 类型定义，因为 e 么有申明类型， e.target 也没有申明类型。最后会导致
+typescript 编译器提示没有 select 方法。
 
-```css
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+正确的写法应该是：
+
+```typescript
+<input className={`text-sm truncate bg-transparent outline-none w-full ${
+	activeTerminal === terminal.id ? 'text-white' : 'text-gray-400'
+	}`}
+	value={terminal.name}
+	onDoubleClick={(e) => (e.target as HTMLInputElement).select()}
+	onChange={(e) => renameTerminal(terminal.id, (e.target as HTMLInputElement).value)}
+	onBlur={(e) => {
+	if (!(e.target as HTMLInputElement).value.trim()) {
+		renameTerminal(terminal.id, `Terminal ${terminal.id}`);
+	}
+	}}
+/>
 ```
 
-然后修改`tailwind.config.js`:
-
-```javascript
-/** @type {import('tailwindcss').Config} */
-module.exports = {  
-  content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html'],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-}
-```
-
-## 注意事项
-
-1. 当你进行编程的请使用 react-router-dom v6 版本的API。
-2. 整体技术组合是：reactjs + typescript + tailwindcss
-
-下面的 Makefile 内容可以通过运行 make ts 用于在一个项目目录里创建一个 frontend 应用，然后使用前面提到的 reactjs + typescript + tailwindcss 技术栈。
-
-```makefile
-# Makefile for running the translation service
-
-# The Python interpreter to use
-PYTHON := python
-
-FRONTEND_DIR = ./frontend
+可以看到 e.target 被申明为 HTMLInputElement 类型，从而满足 typescript 类型定义。
 
 
-# Help command to display available commands
-help:
-	@echo "Available commands:"
-	@echo "  make run  - Run the translation service"
-	@echo "  make help - Display this help message"
 
-ts: create_project install_dependencies init_tailwind configure
-
-create_project:	
-	npx create-react-app frontend --template typescript
-	cd $(FRONTEND_DIR) && rm -rf .git
-
-install_dependencies:
-	cd $(FRONTEND_DIR) && npm install -D tailwindcss postcss autoprefixer
-	cd $(FRONTEND_DIR) && npm install axios react-router-dom
-	cd $(FRONTEND_DIR) && npm install --save-dev @types/react-router-dom
-
-init_tailwind:
-	cd $(FRONTEND_DIR) && npx tailwindcss init -p
-
-configure:
-	@echo "@import 'tailwindcss/base';" | cat - $(FRONTEND_DIR)/src/index.css > temp && mv temp $(FRONTEND_DIR)/src/index.css
-	@echo "@import 'tailwindcss/components';" >> $(FRONTEND_DIR)/src/index.css
-	@echo "@import 'tailwindcss/utilities';" >> $(FRONTEND_DIR)/src/index.css
-	@echo "/** @type {import('tailwindcss').Config} */" > $(FRONTEND_DIR)/tailwind.config.js
-	@echo "module.exports = {" >> $(FRONTEND_DIR)/tailwind.config.js
-	@echo "  content: ['./src/**/*.{js,jsx,ts,tsx}', './public/index.html']," >> $(FRONTEND_DIR)/tailwind.config.js
-	@echo "  theme: {" >> $(FRONTEND_DIR)/tailwind.config.js
-	@echo "    extend: {}," >> $(FRONTEND_DIR)/tailwind.config.js
-	@echo "  }," >> $(FRONTEND_DIR)/tailwind.config.js
-	@echo "  plugins: []," >> $(FRONTEND_DIR)/tailwind.config.js
-	@echo "}" >> $(FRONTEND_DIR)/tailwind.config.js
-
-clean:
-	rm -rf frontend
-```  
 
