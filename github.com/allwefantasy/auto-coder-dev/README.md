@@ -26,6 +26,10 @@ class CommunicateEventType(Enum):
     CODE_HUMAN_AS_MODEL = "code_human_as_model" # 人工模型模式
     ASK_HUMAN = "ask_human"                   # 询问用户
     CODE_ERROR = "code_error"                 # 代码错误
+    CODE_INDEX_BUILD_START = "code_index_build_start" # 代码索引构建开始
+    CODE_INDEX_BUILD_END = "code_index_build_end"   # 代码索引构建结束
+    CODE_INDEX_FILTER_START = "code_index_filter_start" # 代码索引过滤开始
+    CODE_INDEX_FILTER_END = "code_index_filter_end"   # 代码索引过滤结束
 ```
 
 ## 使用方法
