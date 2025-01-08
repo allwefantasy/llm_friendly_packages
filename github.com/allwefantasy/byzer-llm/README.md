@@ -923,6 +923,68 @@ data:image/jpeg;base64,xxxxxx2
 
 我们成功的将 <_image_></_image_> 标签对里的内容抽取出来了。
 
+在Python异步编程时，你还可以使用 `byzerllm.utils.langutil` 中的 asyncfy 或者 asyncfy_with_semaphore 将一个同步方法转化为异步方法。
+下面是这两个方法的签名和说明：
+
+```python
+def asyncfy_with_semaphore(
+    func, semaphore: Optional[anyio.Semaphore]=None, timeout: Optional[float] = None
+):
+    """Decorator that makes a function async, as well as running in a separate thread,
+    with the concurrency controlled by the semaphore. If Semaphore is None, we do not
+    enforce an upper bound on the number of concurrent calls (but it is still bound by
+    the number of threads that anyio defines as an upper bound).
+
+    Args:
+        func (function): Function to make async. If the function is already async,
+            this function will add semaphore and timeout control to it.
+        semaphore (anyio.Semaphore or None): Semaphore to use for concurrency control.
+            Concurrent calls to this function will be bounded by the semaphore.
+        timeout (float or None): Timeout in seconds. If the function does not return
+            within the timeout, a TimeoutError will be raised. If None, no timeout
+            will be enforced. If the function is async, one can catch the CancelledError
+            inside the function to handle the timeout.
+    """
+
+def asyncfy(func):
+    """Decorator that makes a function async. Note that this does not actually make
+    the function asynchroniously running in a separate thread, it just wraps it in
+    an async function. If you want to actually run the function in a separate thread,
+    consider using asyncfy_with_semaphore.
+
+    Args:
+        func (function): Function to make async
+    """
+```
+示例用法：
+
+```python
+ async def async_get_meta(self):
+        return await asyncfy_with_semaphore(self.get_meta)()
+
+async def async_stream_chat(
+            self,
+            tokenizer,
+            ins: str,
+            his: List[Tuple[str, str]] = [],
+            max_length: int = 4096,
+            top_p: float = 0.7,
+            temperature: float = 0.9,
+            **kwargs
+    ):
+        return await asyncfy_with_semaphore(self.stream_chat)(tokenizer, ins, his, max_length, top_p, temperature, **kwargs)
+
+## 还可以配合 lambda 函数使用,这样可以将一个同步方法转化为无参数的异步方法来调用，使用起来更加方便。
+with io.BytesIO() as output:
+    async with asyncfy_with_semaphore(
+        lambda: self.client.with_streaming_response.audio.speech.create(
+            model=self.model, voice=voice, input=ins, **kwargs
+        )
+    )() as response:
+        for chunk in response.iter_bytes():
+            output.write(chunk)
+```
+
 
 ## 注意事项
 

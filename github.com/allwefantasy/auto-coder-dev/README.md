@@ -17,20 +17,25 @@ auto-coder 主要通过该机制实现前后端通信。
 
 ```python
 class CommunicateEventType(Enum):
-    CODE_MERGE = "code_merge"                 # 代码合并事件
-    CODE_GENERATE = "code_generate"           # 代码生成事件
-    CODE_MERGE_RESULT = "code_merge_result"   # 代码合并结果
-    CODE_UNMERGE_RESULT = "code_unmerge_result" # 代码无法合并的结果
-    CODE_START = "code_start"                 # 代码处理开始
-    CODE_END = "code_end"                     # 代码处理结束
-    CODE_HUMAN_AS_MODEL = "code_human_as_model" # 人工模型模式
-    ASK_HUMAN = "ask_human"                   # 询问用户
-    CODE_ERROR = "code_error"                 # 代码错误
-    CODE_INDEX_BUILD_START = "code_index_build_start" # 代码索引构建开始
-    CODE_INDEX_BUILD_END = "code_index_build_end"   # 代码索引构建结束
-    CODE_INDEX_FILTER_START = "code_index_filter_start" # 代码索引过滤开始
-    CODE_INDEX_FILTER_END = "code_index_filter_end"   # 代码索引过滤结束
+    CODE_MERGE = "code_merge"
+    CODE_GENERATE = "code_generate"
+    CODE_MERGE_RESULT = "code_merge_result"
+    CODE_UNMERGE_RESULT = "code_unmerge_result"
+    CODE_START = "code_start"
+    CODE_END = "code_end"
+    CODE_HUMAN_AS_MODEL = "code_human_as_model"
+    ASK_HUMAN = "ask_human"
+    CODE_ERROR = "code_error"
+    CODE_INDEX_BUILD_START = "code_index_build_start"
+    CODE_INDEX_BUILD_END = "code_index_build_end"   
+    CODE_INDEX_FILTER_START = "code_index_filter_start"
+    CODE_INDEX_FILTER_END = "code_index_filter_end"
+    CODE_INDEX_FILTER_FILE_SELECTED = "code_index_filter_file_selected"
+    CODE_RAG_SEARCH_START = "code_rag_search_start"
+    CODE_RAG_SEARCH_END = "code_rag_search_end"
 ```
+
+注意，这些事件需要在客户端全部消费，否则会导致后端服务运行阻塞。
 
 ## 使用方法
 
