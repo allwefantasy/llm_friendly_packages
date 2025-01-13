@@ -880,6 +880,38 @@ storage = ByzerStorage("byzerai_store", "memory", "memory")
 storage.emb("你好")
 ```
 
+## Chat Prefix Completion
+
+byzerllm 支持 chat prefix completion 功能，也就是对话前缀续写。该功能沿用 Chat Completion API，用户提供 assistant 开头的消息，来让模型补全其余的消息。
+该功能可以达到两个效果：
+
+1. 有效的引导大模型的回答。
+2. 可以增加大模型的输出（continue） 功能。
+
+具体使用方式：
+
+```python
+response = llm.chat_oai(
+                        conversations=[
+                            {"role":"user","content":"xxxxx"},
+                            {"role":"assistant","content":"xxxxx"}
+                        ],
+                        llm_config={
+                            "gen.response_prefix": True},
+                    )
+k = response[0].output
+```
+
+要开启该功能，需要确保两点：
+
+1.  conversations 最后一条消息必须是 assistant
+2.  llm_config 参数中添加配置： "gen.response_prefix": True 
+
+通常，还可以配置 llm_config 中的参数 `gen.stop`（字符串数组），这样模型在输出的时候，遇到这些指定的字符就会停止输出，让你有机会控制大模型什么时候停止输出，
+这样你可以再做一些处理后，通过上面的功能让大模型继续输出。
+
+
+
 ## 一些辅助工具
 
 当调用 prompt 函数返回字符串的时候，如果想从里面抽取代码，可以使用如下方式：
