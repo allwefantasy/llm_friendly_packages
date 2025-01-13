@@ -37,6 +37,7 @@ easy-byzerllm chat <模型别名> <query>
 
 ### 硅基流动
 
+```
 byzerllm deploy --pretrained_model_type saas/openai \
 --cpus_per_worker 0.001 \
 --gpus_per_worker 0 \
@@ -44,6 +45,7 @@ byzerllm deploy --pretrained_model_type saas/openai \
 --worker_concurrency 1000 \
 --infer_params saas.base_url="https://api.siliconflow.cn/v1" saas.api_key=${MODEL_silcon_flow_TOKEN}  saas.model=deepseek-ai/deepseek-v2-chat \
 --model deepseek_chat
+```
 
 将 saas.model 替换成硅基流动提供的模型名字，然后将 saas.api_key 替换成你自己的key.
 
