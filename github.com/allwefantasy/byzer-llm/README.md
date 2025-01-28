@@ -1348,6 +1348,65 @@ k = response[0].output
 通常，还可以配置 llm_config 中的参数 `gen.stop`（字符串数组），这样模型在输出的时候，遇到这些指定的字符就会停止输出，让你有机会控制大模型什么时候停止输出，
 这样你可以再做一些处理后，通过上面的功能让大模型继续输出。
 
+## 案例集锦
+
+请对指定文件夹内的所有.py文件进行处理，判断是否存在不兼容 windows 文件编码读取的情况。请使用 prompt 函数来实现。
+
+```python  
+import os
+from pathlib import Path
+from autocoder.common.files import read_file
+import byzerllm
+
+# 初始化大模型
+llm = byzerllm.ByzerLLM.from_default_model(model="deepseek_chat")
+
+@byzerllm.prompt()
+def detect_windows_encoding_issues(code: str) -> str:
+    """
+    分析以下Python代码是否存在读取文件时不兼容Windows的编码问题（要兼容uft8/gbk）：
+    
+    {{ code }}
+    
+    如果存在以上问题，返回如下json格式：
+
+    {
+        "value": 是否存在问题，true 或者 false
+    }
+    """
+
+from byzerllm.types import Bool
+def check_directory(directory: str):
+    """检查目录下所有.py文件的Windows编码兼容性"""
+    issues = []
+    
+    for root, _, files in os.walk(directory):
+        for file in files:
+            if file.endswith('.py'):
+                file_path = Path(root) / file
+                try:
+                    print("processing file: ", file_path)
+                    content = read_file(str(file_path))                    
+                    result = detect_windows_encoding_issues.with_llm(llm).with_return_type(Bool).run(content)
+                    if result.value:
+                        print("found issue in file: ", file_path)
+                        issues.append(str(file_path))
+                except Exception as e:
+                    print(f"Error reading {file_path}: {str(e)}")
+    
+    return issues
+
+# 使用示例
+directory_to_check = "xxxx"  # 修改为你要检查的目录
+issues = check_directory(directory_to_check)
+
+if issues:
+    print("发现以下文件可能存在Windows编码问题：")
+    for issue in issues:
+        print(f"- {issue}")
+else:
+    print("未发现Windows编码问题")
+``` 
 
 
 ## 一些辅助工具
