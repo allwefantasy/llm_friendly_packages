@@ -1370,9 +1370,11 @@ def detect_windows_encoding_issues(code: str) -> str:
     
     如果存在以上问题，返回如下json格式：
 
+    ```json
     {
         "value": 是否存在问题，true 或者 false
     }
+    ```
     """
 
 from byzerllm.types import Bool
