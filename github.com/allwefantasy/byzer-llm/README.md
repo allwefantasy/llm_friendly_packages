@@ -1,12 +1,7 @@
 # byzerllm 大模型编程快速指南
 
-## 安装
 
-```bash
-pip install -U byzerllm
-ray start --head
-```
-## 启动和管理模型
+## 基于 Ray 的启动和管理模型
 
 byzerllm 支持私有化模型或者SaaS模型的部署。
 
@@ -414,14 +409,45 @@ file                : None
 7. state: 每个worker实例当前空闲的并发数（正在运行的并发=worker_max_concurrency-当前state的值）
 8. workers_last_work_time: 每个worker实例最后一次被调用的截止到现在的时间
 
+
+## 纯客户端启动和管理模型
+
+byzerllm 也支持纯客户端启动和管理模型。启动一个 llm 的实例方式为：
+
+```python
+llm = byzerllm.SimpleByzerLLM(default_model_name="deepseek_chat")
+api_key_dir = os.path.expanduser("~/.auto-coder/keys")
+api_key_file = os.path.join(api_key_dir, "api.deepseek.com")
+
+if not os.path.exists(api_key_file):                
+    raise Exception(f"API key file not found: {api_key_file}")
+
+with open(api_key_file, "r") as f:
+    api_key = f.read()
+
+llm.deploy(
+    model_path="",
+    pretrained_model_type="saas/openai",
+    udf_name="deepseek_chat",
+    infer_params={
+        "saas.base_url": "https://api.deepseek.com/v1",
+        "saas.api_key": api_key,
+        "saas.model": "deepseek-chat"
+    }
+)
+```
+
+之后就可以用 llm 实例和大模型沟通了。
+
 ## hello world
 
-来和我们的大模型打个招呼:
+启动大模型后，我们就可以使用 byzerllm API和的大模型交流了:
 
 ```python
 import byzerllm
 
 llm = byzerllm.ByzerLLM.from_default_model(model="deepseek_chat")
+# or use SimpleByzerLLM
 
 @byzerllm.prompt(llm=llm)
 def hello(q:str) ->str:
@@ -512,6 +538,8 @@ tell_story.with_llm(llm)
 
 认为的限制大模型一次交互最多只能输出10个字符，但是系统依然自动完成了远超过10个字符的文本生成。
 
+*** 尽管如此，我们还是推荐使用我们后面介绍的对话前缀续写的方式来生成超长文本。***
+
 ## 对象输出
 
 前面我们的例子都是返回字符串，但是我们也可以返回对象，这样我们就可以更加灵活的处理返回结果。
@@ -542,6 +570,40 @@ print(s.title)
 ```
 
 可以看到，我们很轻松的将输出转化为格式化输出。
+
+*** 尽管如此，我们推荐另外一个结构化输出方案 ***:
+
+```python
+import pydantic 
+
+class Story(pydantic.BaseModel):    
+    title: str
+    body: str 
+
+@byzerllm.prompt()
+def tell_story()->str:
+    '''
+    讲一个100字的故事。
+    
+    返回符合以下格式的JSON:
+    
+    ```json
+    {
+        "title": "故事的标题",
+        "body": "故事主体"
+    }    
+    ```    
+    '''
+
+s = tell_story.with_llm(llm).with_return_type(Story).run()
+print(isinstance(s, Story))
+print(s.title)
+
+## True
+## 勇敢的小鸟
+```
+
+这里我们显示的指定要返回的json格式，然后通过 with_return_type 指定对应的pydatic 类，自动来完成转换。
 
 ## 自定义字段抽取
 
@@ -601,7 +663,7 @@ class RAG():
         self.llm.setup_template(model="deepseek_chat",template="auto")
         self.llm.setup_default_model_name("deepseek_chat")        
     
-    @byzerllm.prompt(lambda self:self.llm)
+    @byzerllm.prompt()
     def generate_answer(self,name,task_count,tasks)->str:
         '''
         Hello {{ name }},
@@ -617,7 +679,7 @@ class RAG():
 
 t = RAG()
 
-response = t.generate_answer(**data)
+response = t.generate_answer.with_llm(llm).run(**data)
 print(response)
 
 ## 输出:
@@ -1058,15 +1120,7 @@ json.loads(v)
     293,
     286,
     1409,
-    281,
-    1823,
-    807,
-    264,
-    6920,
-    589,
-    1109,
-    295,
-    257,
+.....    
     31782,
     13,
     50586],
