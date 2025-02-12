@@ -805,7 +805,7 @@ v = llm.stream_chat_oai(model="deepseek_chat",conversations=[{
     "content":"你好，你是谁",
 }],delta_mode=True)
 
-for t in v:
+for t,meta in v:
     print(t,flush=True)  
 
 # 你好
@@ -821,6 +821,14 @@ for t in v:
 # 、
 # 解答
 # 问题....
+```
+其中meta的结构如下：
+
+```python
+SingleOutputMeta(input_tokens_count=input_tokens_count,
+                generated_tokens_count=generated_tokens_count,
+                reasoning_content=reasoning_text,
+                finish_reason=chunk.choices[0].finish_reason)
 ```
 
 如果你不想要流式输出，但是想用底层一点的API，你可以使用 `llm.chat_oai` 方法：
@@ -838,6 +846,23 @@ v = llm.chat_oai(model="deepseek_chat",conversations=[{
 print(v[0].output)
 ## 你好！我是一个人工智能助手，旨在提供信息、解答问题和帮助用户解决问题。如果你有任何问题或需要帮助，请随时告诉我。
 ```
+
+其中 v[9].meta 的结构如下：
+
+```python
+{
+    "request_id": response.id,
+    "input_tokens_count": input_tokens_count,
+    "generated_tokens_count": generated_tokens_count,
+    "time_cost": time_cost,
+    "first_token_time": 0,
+    "speed": float(generated_tokens_count) / time_cost,
+    # Available options: stop, eos, length, tool_calls
+    "finish_reason": response.choices[0].finish_reason,
+    "reasoning_content": reasoning_text
+}
+```
+
 
 ## Function Calling 
 
@@ -1250,6 +1275,19 @@ for i in v:
 ```
 
 可以看到，和普通的 prompt 函数的区别在于，返回值是一个生成器，然后你可以通过 for 循环来获取结果。
+
+你也可以得到一些meta 数据：
+
+```python
+import byzerllm
+meta_holder = byzerllm.MetaHolder()
+v = tell_story.with_llm(llm).with_meta(meta_holder).run()    
+
+meta_holder.meta
+```
+
+其中 `meta_holder.meta` 结构为 SingleOutputMeta。
+
 
 ## 向量化模型
 
