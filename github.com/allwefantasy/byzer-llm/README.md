@@ -1283,10 +1283,32 @@ import byzerllm
 meta_holder = byzerllm.MetaHolder()
 v = tell_story.with_llm(llm).with_meta(meta_holder).run()    
 
-meta_holder.meta
+meta_holder.get_meta()
+meta_holder.get_meta_model()
 ```
 
-其中 `meta_holder.meta` 结构为 SingleOutputMeta。
+其中 `meta_holder.get_meta()` 结构为:
+
+```python
+{
+    "input_tokens_count": 0,
+    "generated_tokens_count": 0,
+    "reasoning_content": "",
+    "finish_reason": "stop",
+    "first_token_time": 0.0
+}
+```
+
+其中 `meta_holder.get_meta_model()` 结构如下：
+
+```python
+class MetaOutput(BaseModel):
+    input_tokens_count: int
+    generated_tokens_count: int
+    reasoning_content: str
+    finish_reason: str
+    first_token_time: float
+```
 
 
 ## 向量化模型
