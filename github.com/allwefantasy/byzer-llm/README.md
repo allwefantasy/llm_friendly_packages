@@ -44,9 +44,8 @@ llm = get_single_llm("v3_chat", product_mode="lite")
 ```python
 import byzerllm
 
-llm = byzerllm.ByzerLLM.from_default_model(model="deepseek_chat")
-# or use SimpleByzerLLM
-
+## llm = byzerllm.ByzerLLM.from_default_model(model="deepseek_chat") 
+llm = get_single_llm("v3_chat", product_mode="lite")
 @byzerllm.prompt(llm=llm)
 def hello(q:str) ->str:
     '''
@@ -97,9 +96,10 @@ byzerllm 提供了更加易用的 API :
 
 ```python
 import byzerllm
-from byzerllm import ByzerLLM
-
-llm = ByzerLLM.from_default_model("deepseek_chat")
+from autocoder.utils.llms import get_single_llm
+## from byzerllm import ByzerLLM
+## llm = ByzerLLM.from_default_model("deepseek_chat")
+llm = get_single_llm("v3_chat", product_mode="lite")
 
 @byzerllm.prompt()
 def tell_story() -> str:
@@ -735,14 +735,7 @@ json.loads(v)
    'text': ' In the last chapter, you and I started to step through the internal workings of a transformer.',
    'tokens': [50364,
     682,
-    264,
-    1036,
-    7187,
-    11,
-    291,
-    293,
-    286,
-    1409,
+    264,   
 .....    
     31782,
     13,
@@ -759,17 +752,7 @@ json.loads(v)
    'text': ' and a lot of other tools in the modern wave of AI.',
    'tokens': [50759,
     293,
-    257,
-    688,
-    295,
-    661,
-    3873,
-    294,
-    264,
-    4363,
-    5772,
-    295,
-    7318,
+   ....
     13,
     50867],
    'temperature': 0.0,
@@ -838,8 +821,9 @@ byzerllm 底层支持流式输出，非 prompt 函数的用法是这样的：
 
 ```python
 import byzerllm
-
-llm = byzerllm.ByzerLLM.from_default_model("deepseek_chat")
+from autocoder.utils.llms import get_single_llm
+## llm = byzerllm.ByzerLLM.from_default_model("deepseek_chat")
+llm = get_single_llm("v3_chat", product_mode="lite")
 
 v = llm.stream_chat_oai(conversations=[{
     "role":"user",
@@ -858,8 +842,9 @@ import byzerllm
 import json
 import base64
 from typing import Generator
-
-llm = byzerllm.ByzerLLM.from_default_model("deepseek_chat")
+from autocoder.utils.llms import get_single_llm
+## llm = byzerllm.ByzerLLM.from_default_model("deepseek_chat")
+llm = get_single_llm("v3_chat", product_mode="lite")
 
 @byzerllm.prompt()
 def tell_story() -> Generator[str, None, None]:
@@ -1015,9 +1000,9 @@ import os
 from pathlib import Path
 from autocoder.common.files import read_file
 import byzerllm
-
-# 初始化大模型
-llm = byzerllm.ByzerLLM.from_default_model(model="deepseek_chat")
+from autocoder.utils.llms import get_single_llm
+## llm = byzerllm.ByzerLLM.from_default_model(model="deepseek_chat")
+llm = get_single_llm("v3_chat", product_mode="lite")
 
 @byzerllm.prompt()
 def detect_windows_encoding_issues(code: str) -> str:
