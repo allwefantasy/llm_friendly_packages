@@ -813,9 +813,6 @@ plt.axis('off')
 plt.show()
 ```
 
-## Prompt 函数的流式输出
-
-byzerllm 底层支持流式输出，非 prompt 函数的用法是这样的：
 
 ## 使用历史对话
 
@@ -850,6 +847,10 @@ print(result)
 ```
 
 这个方法特别适合需要上下文连续的场景，比如多轮对话、故事续写等。通过传入历史对话，可以让大模型更好地理解当前对话的上下文，从而生成更连贯的回复。
+
+## Prompt 函数的流式输出
+
+byzerllm 底层支持流式输出，非 prompt 函数的用法是这样的：
 
 ```python
 import byzerllm
