@@ -31,7 +31,7 @@ llm.deploy(
 或者通过 `auto-coder` 库的更高级 API 启动：
 
 ```python
-from autocoder.utils.llms import get_single_llm
+from byzerllm import get_single_llm
 llm = get_single_llm("v3_chat", product_mode="lite")
 ```
 

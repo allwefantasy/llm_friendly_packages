@@ -3,7 +3,8 @@ from pydantic import BaseModel
 import byzerllm
 
 app = FastAPI()
-llm = byzerllm.ByzerLLM.from_default_model("deepseek_chat")
+
+llm = byzerllm.get_single_llm("v3_chat", product_mode="lite")
 
 class TranslationRequest(BaseModel):
     text: str
