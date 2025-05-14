@@ -44,8 +44,7 @@ llm = get_single_llm("v3_chat", product_mode="lite")
 ```python
 import byzerllm
 
-## llm = byzerllm.ByzerLLM.from_default_model(model="deepseek_chat") 
-llm = get_single_llm("v3_chat", product_mode="lite")
+llm = byzerllm.get_single_llm("v3_chat", product_mode="lite")
 @byzerllm.prompt(llm=llm)
 def hello(q:str) ->str:
     '''
@@ -96,10 +95,9 @@ byzerllm 提供了更加易用的 API :
 
 ```python
 import byzerllm
-from autocoder.utils.llms import get_single_llm
 ## from byzerllm import ByzerLLM
 ## llm = ByzerLLM.from_default_model("deepseek_chat")
-llm = get_single_llm("v3_chat", product_mode="lite")
+llm = byzerllm.get_single_llm("v3_chat", product_mode="lite")
 
 @byzerllm.prompt()
 def tell_story() -> str:
