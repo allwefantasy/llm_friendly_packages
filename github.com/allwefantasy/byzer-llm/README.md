@@ -1,7 +1,8 @@
 # byzerllm 大模型编程快速指南
 
+最新 byzerllm 版本为： 0.1.183
 
-## 纯客户端启动和管理模型
+## 代码配置模型
 
 byzerllm 也支持纯客户端启动和管理模型。启动一个 llm 的实例方式为：
 
@@ -28,9 +29,9 @@ llm.deploy(
 )
 ```
 
-或者通过更高级 API 启动。具体方式为：
+## 使用预置模型
 
-先配置模型，打开 ~/.auto-coder/keys/models.json 文件,填充如下信息
+如果用户指定过了模型名称，那么一般直接使用预置模型，你可以查看 ~/.auto-coder/keys/models.json 是否有对应的模型，如果没有，先配置模型，打开 ~/.auto-coder/keys/models.json 文件,填充如下信息
 
 ```json
 [
