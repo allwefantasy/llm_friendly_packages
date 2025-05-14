@@ -28,11 +28,30 @@ llm.deploy(
 )
 ```
 
-或者通过 `auto-coder` 库的更高级 API 启动：
+或者通过 `auto-coder` 库的更高级 API 启动。
+
+先配置模型，打开 ~/.auto-coder/keys/models.json 文件,填充如下信息
+
+[
+    { 
+        "name": "ark_v3_0324_chat",
+        "description": "",
+        "model_name": "deepseek-v3-250324",
+        "model_type": "saas/openai",
+        "base_url": "https://ark.cn-beijing.volces.com/api/v3",
+        "api_key_path": "ark_v3_0324_chat",
+        "is_reasoning": false,
+        "input_price": 2.0,
+        "output_price": 8.0,
+        "average_speed": 0.0
+      }
+]
+
+然后新建一个  ~/.auto-coder/keys/ark_v3_0324_chat  中输入你的 火山引擎 API KEY。 现在就可以在代码通过 name 获取llm对象：
 
 ```python
 import byzerllm
-llm = byzerllm.get_single_llm("v3_chat", product_mode="lite")
+llm = byzerllm.get_single_llm("ark_v3_0324_chat", product_mode="lite")
 ```
 
 之后就可以用 llm 实例和大模型沟通了。
