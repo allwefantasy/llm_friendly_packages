@@ -817,6 +817,40 @@ plt.show()
 
 byzerllm 底层支持流式输出，非 prompt 函数的用法是这样的：
 
+## 使用历史对话
+
+Prompt 函数支持传入历史对话，通过 `with_conversation` 方法可以传入对话上下文。方法签名为：
+
+```python
+def with_conversation(self, conversation: List[Dict[str,Any]])
+```
+
+其中 `conversation` 是一个字典列表，每个字典表示一条对话消息，包含 `role` 和 `content` 字段。例如：
+
+```python
+import byzerllm
+from autocoder.utils.llms import get_single_llm
+llm = get_single_llm("v3_chat", product_mode="lite")
+
+# 创建对话历史
+conversation = [
+    {"role": "user", "content": "你好，请讲一个关于太空的故事"},
+    {"role": "assistant", "content": "好的，这是一个关于宇航员在火星上发现神秘遗迹的故事..."}
+]
+
+@byzerllm.prompt()
+def continue_story() -> str:
+    '''
+    请继续上面的故事，增加一些戏剧性的转折
+    '''
+
+# 使用历史对话继续故事
+result = continue_story.with_llm(llm).with_conversation(conversation).run()
+print(result)
+```
+
+这个方法特别适合需要上下文连续的场景，比如多轮对话、故事续写等。通过传入历史对话，可以让大模型更好地理解当前对话的上下文，从而生成更连贯的回复。
+
 ```python
 import byzerllm
 from autocoder.utils.llms import get_single_llm
