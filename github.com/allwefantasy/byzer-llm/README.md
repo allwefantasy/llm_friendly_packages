@@ -31,8 +31,8 @@ llm.deploy(
 或者通过 `auto-coder` 库的更高级 API 启动：
 
 ```python
-from byzerllm import get_single_llm
-llm = get_single_llm("v3_chat", product_mode="lite")
+import byzerllm
+llm = byzerllm.get_single_llm("v3_chat", product_mode="lite")
 ```
 
 之后就可以用 llm 实例和大模型沟通了。
@@ -96,7 +96,7 @@ byzerllm 提供了更加易用的 API :
 ```python
 import byzerllm
 ## from byzerllm import ByzerLLM
-## llm = ByzerLLM.from_default_model("deepseek_chat")
+## llm = byzerllm.get_single_llm("deepseek_chat")
 llm = byzerllm.get_single_llm("v3_chat", product_mode="lite")
 
 @byzerllm.prompt()
@@ -315,7 +315,7 @@ data = {
 
 class RAG():
     def __init__(self):        
-        self.llm = byzerllm.ByzerLLM.from_default_model(model="deepseek_chat")
+        self.llm = byzerllm.get_single_llm(model="deepseek_chat")
     
     @byzerllm.prompt()
     def generate_answer(self,name,task_count,tasks)->str:
@@ -820,7 +820,7 @@ byzerllm 底层支持流式输出，非 prompt 函数的用法是这样的：
 ```python
 import byzerllm
 from autocoder.utils.llms import get_single_llm
-## llm = byzerllm.ByzerLLM.from_default_model("deepseek_chat")
+## llm = byzerllm.get_single_llm("deepseek_chat")
 llm = get_single_llm("v3_chat", product_mode="lite")
 
 v = llm.stream_chat_oai(conversations=[{
