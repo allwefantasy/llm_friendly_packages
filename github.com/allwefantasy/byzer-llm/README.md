@@ -394,7 +394,7 @@ print(f"second time cost: {time.monotonic()-start}")
 ```python
 import byzerllm
 
-llm = byzerllm.ByzerLLM.from_default_model(model="deepseek_chat")
+llm = byzerllm.get_single_llm(model="deepseek_chat")
 
 v = llm.stream_chat_oai(model="deepseek_chat",conversations=[{
     "role":"user",
@@ -432,7 +432,7 @@ SingleOutputMeta(input_tokens_count=input_tokens_count,
 ```python
 import byzerllm
 
-llm = byzerllm.ByzerLLM.from_default_model(model="deepseek_chat")
+llm = byzerllm.get_single_llm(model="deepseek_chat")
 
 v = llm.chat_oai(model="deepseek_chat",conversations=[{
     "role":"user",
@@ -541,7 +541,7 @@ byerllm 也能很好的支持多模态的交互，而且统一了多模态大模
 import byzerllm
 from byzerllm.types import ImagePath
 
-vl_llm = byzerllm.ByzerLLM.from_default_model("gpt4o_mini_chat")
+vl_llm = byzerllm.get_single_llm("gpt4o_mini_chat")
 
 
 @byzerllm.prompt()
@@ -567,7 +567,7 @@ v
 ```python
 import byzerllm
 
-vl_llm = byzerllm.ByzerLLM.from_default_model("gpt4o_mini_chat")
+vl_llm = byzerllm.get_single_llm("gpt4o_mini_chat")
 
 
 @byzerllm.prompt()
@@ -665,7 +665,7 @@ import byzerllm
 import base64
 import json
 
-llm = byzerllm.ByzerLLM.from_default_model("openai_tts")
+llm = byzerllm.get_single_llm("openai_tts")
 
 
 t = llm.chat_oai(conversations=[{
@@ -706,7 +706,7 @@ import json
 import base64
 from byzerllm.types import AudioPath
 
-llm = byzerllm.ByzerLLM.from_default_model("speech_to_text")
+llm = byzerllm.get_single_llm("speech_to_text")
 
 audio_file = "/Users/allwefantasy/videos/output_audio.mp3"
 
@@ -789,7 +789,7 @@ import byzerllm
 import json
 import base64
 
-llm = byzerllm.ByzerLLM.from_default_model("openai_image_gen")
+llm = byzerllm.get_single_llm("openai_image_gen")
 t = llm.chat_oai(conversations=[{
     "role":"user",
     "content": json.dumps({
@@ -821,7 +821,7 @@ byzerllm 底层支持流式输出，非 prompt 函数的用法是这样的：
 import byzerllm
 from autocoder.utils.llms import get_single_llm
 ## llm = byzerllm.get_single_llm("deepseek_chat")
-llm = get_single_llm("v3_chat", product_mode="lite")
+llm = byzerllm.get_single_llm("v3_chat", product_mode="lite")
 
 v = llm.stream_chat_oai(conversations=[{
     "role":"user",
@@ -841,7 +841,7 @@ import json
 import base64
 from typing import Generator
 from autocoder.utils.llms import get_single_llm
-## llm = byzerllm.ByzerLLM.from_default_model("deepseek_chat")
+## llm = byzerllm.get_single_llm("deepseek_chat")
 llm = get_single_llm("v3_chat", product_mode="lite")
 
 @byzerllm.prompt()
@@ -999,7 +999,7 @@ from pathlib import Path
 from autocoder.common.files import read_file
 import byzerllm
 from autocoder.utils.llms import get_single_llm
-## llm = byzerllm.ByzerLLM.from_default_model(model="deepseek_chat")
+## llm = byzerllm.get_single_llm(model="deepseek_chat")
 llm = get_single_llm("v3_chat", product_mode="lite")
 
 @byzerllm.prompt()
