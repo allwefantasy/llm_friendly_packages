@@ -28,10 +28,11 @@ llm.deploy(
 )
 ```
 
-或者通过 `auto-coder` 库的更高级 API 启动。
+或者通过更高级 API 启动。具体方式为：
 
 先配置模型，打开 ~/.auto-coder/keys/models.json 文件,填充如下信息
 
+```json
 [
     { 
         "name": "ark_v3_0324_chat",
@@ -46,8 +47,11 @@ llm.deploy(
         "average_speed": 0.0
       }
 ]
+```
 
-然后新建一个  ~/.auto-coder/keys/ark_v3_0324_chat  中输入你的 火山引擎 API KEY。 现在就可以在代码通过 name 获取llm对象：
+然后新建一个  ~/.auto-coder/keys/ark_v3_0324_chat  中输入你的 火山引擎 API KEY。 
+
+现在就可以在代码通过 name 获取llm对象：
 
 ```python
 import byzerllm
