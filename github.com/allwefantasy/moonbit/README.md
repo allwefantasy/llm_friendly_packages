@@ -1182,8 +1182,17 @@ Practical testing guidance for MoonBit. Keep tests black-box by default and rely
 
 # Packages
 
+This section contains detailed documentation for specific MoonBit packages and libraries. When working with these packages, refer to the linked documentation files for comprehensive API references, usage patterns, and examples.
 
+**How to use this section:**
+- Each package has its own dedicated documentation file
+- Read the specific package documentation to understand its APIs, types, and usage patterns
+- The documentation includes practical examples and common use cases
+- Use these as reference when implementing features that require specific package functionality
 
 ## Async
 
+For asynchronous programming patterns, coroutines, and concurrent execution in MoonBit, see:
 [moonbit-async.md](./moonbit-async.md)
+
+This covers async/await patterns, Promise-like constructs, and concurrent programming models available in MoonBit.
