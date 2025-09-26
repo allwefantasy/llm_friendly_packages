@@ -675,7 +675,7 @@ test "Rational operations" {
 
   // Reduction
   let r3 = @rational.new(6, 8)    // 6/8 = 3/4
-  inspect(r3.to_string(), content="3/4")
+  inspect(r3.to_string(), content="Some(3/4)")
 }
 ```
 
@@ -1190,13 +1190,12 @@ test "debugging tools" {
     "version": "1.0",
     "features": "fast,safe,simple"
   }
-  @json.inspect(complex_data, content=(
-    #|{
-    #|  name: "MoonBit"
-    #|  version: "1.0"
-    #|  features: "fast,safe,simple"
-    #|}
-  ))
+  // println(@json.stringify(complex_data.to_json()))
+  @json.inspect(complex_data, content={
+    "name": "MoonBit",
+    "version": "1.0",
+    "features": "fast,safe,simple"
+  })
 
   // Conditional debugging
   let debug = true
