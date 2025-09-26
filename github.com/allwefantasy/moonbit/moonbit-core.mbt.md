@@ -1,4 +1,3 @@
-
 # MoonBit Core Standard Library Complete Guide
 
 MoonBit Core is the standard library of the MoonBit language, providing core functionality and data structures commonly used in programming. This document follows the MoonBit project documentation format and comprehensively introduces the various modules of the Core library and their usage.
