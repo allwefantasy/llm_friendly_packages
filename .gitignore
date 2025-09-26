@@ -5,3 +5,7 @@ output.txt
 filelog.json
 /actions/
 /output.txt
+target/
+.mooncakes/
+moon.mod.json
+moon.pkg.json
