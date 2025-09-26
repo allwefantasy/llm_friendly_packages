@@ -24,7 +24,7 @@ Add required packages to `moon.pkg.json`:
 {
   "import": [
     "moonbitlang/async",
-    "moonbitlang/async/socket", 
+    "moonbitlang/async/socket",
     "moonbitlang/async/fs",
     "moonbitlang/async/http",
     "moonbitlang/async/process"
@@ -54,10 +54,10 @@ async fn main {
 async fn basic_operations() -> Unit {
   // Sleep - yield execution to other tasks
   @async.sleep(500)  // 500 milliseconds
-  
+
   // Pause - actively yield execution
   @async.pause()
-  
+
   // Get current timestamp
   let now = @async.now()
   println("Current time: \{now}")
@@ -78,13 +78,13 @@ async fn timeout_examples() -> Unit {
   } catch {
     @async.TimeoutError => println("Operation timed out")
   }
-  
+
   // Return None after timeout
   let result = @async.with_timeout_opt(1000, fn() {
     @async.sleep(500)
     "Completed successfully"
   })
-  
+
   match result {
     Some(value) => println("Result: \{value}")
     None => println("Operation timed out")
@@ -105,16 +105,16 @@ async fn task_group_basics() -> Unit {
       @async.sleep(100)
       println("Background task completed")
     })
-    
+
     // Spawn task with return value
     let task = group.spawn(fn() {
       @async.sleep(200)
       42
     })
-    
+
     let result = task.wait()
     println("Task result: \{result}")
-    
+
     "Task group return value"
   }) |> println
 }
@@ -131,13 +131,13 @@ async fn task_options() -> Unit {
       @async.sleep(50)
       raise Failure("This error won't affect the entire task group")
     })
-    
+
     // No-wait task - automatically cancelled when task group ends
     group.spawn_bg(no_wait=true, fn() {
       @async.sleep(10000)  // Very long task
       println("This line won't execute")
     })
-    
+
     @async.sleep(100)
     println("Task group completed normally")
   })
@@ -155,12 +155,12 @@ async fn error_propagation() -> Unit {
         @async.sleep(100)
         println("Task 1 running normally")
       })
-      
+
       group.spawn_bg(fn() {
         @async.sleep(50)
         raise Failure("Task 2 failed")  // This will cause the entire task group to fail
       })
-      
+
       @async.sleep(200)
       println("This line won't execute")
     })
@@ -183,17 +183,17 @@ async fn file_operations() -> Unit {
     defer file.close()
     file.write("Hello, World!\nSecond line content")
   }
-  
+
   // Read file
   {
     let file = @fs.open("test.txt", mode=ReadOnly)
     defer file.close()
-    
+
     let content = file.read_all()
     println("File content: \{content}")
     println("File size: \{file.size()} bytes")
   }
-  
+
   // Delete file
   @fs.remove("test.txt")
 }
@@ -206,13 +206,13 @@ async fn file_operations() -> Unit {
 async fn advanced_file_ops() -> Unit {
   let file = @fs.open("data.txt", mode=ReadWrite, create=0o644, truncate=true)
   defer file.close()
-  
+
   // Write data
   file.write("Line 1\nLine 2\nLine 3\n")
-  
+
   // Move file pointer
   file.seek(0, mode=FromStart)
-  
+
   // Chunked reading
   let buf = FixedArray::make(1024, b'0')
   while file.read(buf) is n && n > 0 {
@@ -231,10 +231,10 @@ async fn directory_operations() -> Unit {
   let dir_file = @fs.open(".", mode=ReadOnly)
   let dir = dir_file.as_dir()
   defer dir.close()
-  
+
   let files = dir.read_all()
   files.sort()
-  
+
   for file in files {
     println("File: \{file}")
   }
@@ -247,22 +247,22 @@ async fn directory_operations_advanced() -> Unit {
   for file in files {
     println("File: \{file}")
   }
-  
+
   // Create directory
   @fs.mkdir("new_dir", permission=0o755)
-  
+
   // Remove directory (recursive)
   @fs.rmdir("old_dir", recursive=true)
-  
+
   // Check file properties
   if @fs.exists("config.txt") {
     println("Config file exists")
   }
-  
+
   if @fs.can_read("data.txt") {
     println("Can read data file")
   }
-  
+
   // Get absolute path
   let abs_path = @fs.realpath("./relative/path")
   println("Absolute path: \{abs_path}")
@@ -275,24 +275,24 @@ async fn directory_operations_advanced() -> Unit {
 ///|
 async fn file_system_utilities() -> Unit {
   let path = "example.txt"
-  
+
   // Check file existence and permissions
   if @fs.exists(path) {
     println("File exists")
-    
+
     if @fs.can_read(path) {
       println("Can read file")
     }
-    
+
     if @fs.can_write(path) {
       println("Can write to file")
     }
-    
+
     if @fs.can_execute(path) {
       println("Can execute file")
     }
   }
-  
+
   // Get file type
   let file_kind = @fs.kind(path)
   match file_kind {
@@ -301,11 +301,11 @@ async fn file_system_utilities() -> Unit {
     SymLink => println("Symbolic link")
     _ => println("Other file type")
   }
-  
+
   // Convenient file operations
   let content = @fs.read_file("input.txt")
   @fs.write_file("output.txt", content, create=0o644)
-  
+
   // Text file operations with encoding
   let text = @fs.read_text_file("text.txt", encoding=UTF8)
   @fs.write_text_file("new_text.txt", text, encoding=UTF8, create=0o644)
@@ -322,19 +322,19 @@ async fn tcp_echo_server() -> Unit {
   @async.with_task_group(fn(root) {
     let server = @socket.TCPServer::new(@socket.Addr::parse("127.0.0.1:8080"))
     defer server.close()
-    
+
     println("TCP server started on port 8080")
-    
+
     for {
       let (conn, addr) = server.accept()
       println("New connection from: \{addr}")
-      
+
       root.spawn_bg(allow_failure=true, fn() {
         defer {
           conn.close()
           println("Connection closed")
         }
-        
+
         // Echo all data
         conn.write_reader(conn)
       })
@@ -350,12 +350,12 @@ async fn tcp_echo_server() -> Unit {
 async fn tcp_client() -> Unit {
   let conn = @socket.TCP::new()
   defer conn.close()
-  
+
   conn.connect(@socket.Addr::parse("127.0.0.1:8080"))
-  
+
   // Send data
   conn.write("Hello, Server!\n")
-  
+
   // Read response
   let buf = FixedArray::make(1024, b'0')
   let n = conn.read(buf)
@@ -371,12 +371,12 @@ async fn tcp_client() -> Unit {
 async fn udp_example() -> Unit {
   let sock = @socket.UDP::new()
   defer sock.close()
-  
+
   sock.bind(@socket.Addr::parse("0.0.0.0:9090"))
-  
+
   // Send data
   sock.send_to("UDP message", @socket.Addr::parse("127.0.0.1:9091"))
-  
+
   // Receive data
   let buf = FixedArray::make(1024, b'0')
   let (n, from_addr) = sock.recv_from(buf)
@@ -395,9 +395,9 @@ async fn tls_client_example() -> Unit {
   // Connect to HTTPS server
   let tcp_conn = @socket.TCP::new()
   defer tcp_conn.close()
-  
+
   tcp_conn.connect(@socket.Addr::parse("example.com:443"))
-  
+
   // Create TLS connection
   let tls_conn = @tls.TLS::client(
     tcp_conn,
@@ -411,10 +411,10 @@ async fn tls_client_example() -> Unit {
     }) |> ignore
     tls_conn.close()
   }
-  
+
   // Send HTTP request over TLS
   tls_conn.write("GET / HTTP/1.1\r\nHost: example.com\r\n\r\n")
-  
+
   // Read response
   let buf = FixedArray::make(4096, b'0')
   let n = tls_conn.read(buf)
@@ -431,20 +431,20 @@ async fn tls_server_example() -> Unit {
   // WARNING: This API is for testing only
   let tcp_server = @socket.TCPServer::new(@socket.Addr::parse("0.0.0.0:8443"))
   defer tcp_server.close()
-  
+
   @async.with_task_group(fn(group) {
     for {
       let (tcp_conn, addr) = tcp_server.accept()
       println("TLS connection from: \{addr}")
-      
+
       group.spawn_bg(allow_failure=true, fn() {
         defer tcp_conn.close()
-        
+
         let tls_conn = @tls.TLS::server(
           tcp_conn,
           private_key_file="server.key",
           private_key_type=PEM,
-          certificate_file="server.crt", 
+          certificate_file="server.crt",
           certificate_type=PEM
         )
         defer {
@@ -453,7 +453,7 @@ async fn tls_server_example() -> Unit {
           }) |> ignore
           tls_conn.close()
         }
-        
+
         // Handle TLS connection
         handle_tls_request(tls_conn)
       })
@@ -481,7 +481,7 @@ async fn serve_file(
     [.., .. ".jpg"] => "image/jpeg"
     _ => "application/octet-stream"
   }
-  
+
   conn
   ..send_response(200, "OK", extra_headers={ "Content-Type": content_type })
   ..write_reader(file)
@@ -496,18 +496,18 @@ async fn serve_directory(
 ) -> Unit {
   let files = dir.read_all()
   files.sort()
-  
+
   conn
   ..send_response(200, "OK", extra_headers={ "Content-Type": "text/html" })
   ..write("<!DOCTYPE html><html><body>")
   ..write_string("<h1>Directory: \{path}</h1>\n")
   ..write("<ul>")
-  
+
   for file in files {
     let sep = if path.ends_with("/") { "" } else { "/" }
     conn.write_string("<li><a href=\"\{path}\{sep}\{file}\">\{file}</a></li>\n")
   }
-  
+
   conn..write("</ul></body></html>")..end_response()
 }
 
@@ -516,21 +516,21 @@ async fn http_file_server() -> Unit {
   let base_path = "."
   let server = @socket.TCPServer::new(@socket.Addr::parse("0.0.0.0:8000"))
   defer server.close()
-  
+
   println("HTTP file server started on port 8000")
-  
+
   @async.with_task_group(fn(ctx) {
     for {
       let (tcp_conn, addr) = server.accept()
       let conn = @http.ServerConnection::new(tcp_conn)
       println("New connection from: \{addr}")
-      
+
       ctx.spawn_bg(allow_failure=true, fn() {
         defer conn.close()
-        
+
         for {
           let request = conn.read_request()
-          
+
           match request.meth {
             Get => {
               let file = @fs.open(base_path + request.path, mode=ReadOnly) catch {
@@ -543,7 +543,7 @@ async fn http_file_server() -> Unit {
                 }
               }
               defer file.close()
-              
+
               if file.kind() is Directory {
                 serve_directory(conn, file.as_dir(), path=request.path)
               } else {
@@ -572,7 +572,7 @@ async fn http_client_example() -> Unit {
   let (response, body) = @http.get("https://httpbin.org/get")
   println("Status code: \{response.code}")
   println("Response body: \{body}")
-  
+
   // POST request
   let post_data = "{ \"key\": \"value\" }"
   let (response, body) = @http.post(
@@ -597,7 +597,7 @@ async fn process_operations() -> Unit {
   // Run simple command
   let exit_code = @process.run("ls", ["-la"])
   println("Command exit code: \{exit_code}")
-  
+
   // Command with environment variables
   @process.run(
     "env",
@@ -616,19 +616,19 @@ async fn process_communication() -> Unit {
   @async.with_task_group(fn(group) {
     let (read_from_process, write_to_process) = @process.read_from_process()
     defer read_from_process.close()
-    
+
     // Start process
     group.spawn_bg(fn() {
       @process.run("grep", ["async"], stdout=write_to_process)
       |> ignore
     })
-    
+
     // Send data to process and read results
     group.spawn_bg(fn() {
       write_to_process.write("async programming\nsync programming\nasync example\n")
       write_to_process.close()
     })
-    
+
     // Read process output
     let buf = FixedArray::make(1024, b'0')
     while read_from_process.read(buf) is n && n > 0 {
@@ -653,7 +653,7 @@ async fn retry_examples() -> Unit {
     }
     "Success"
   })
-  
+
   // Fixed delay retry
   let result2 = @async.retry(FixedDelay(1000), max_retry=5, fn() {
     println("Attempting network request...")
@@ -661,7 +661,7 @@ async fn retry_examples() -> Unit {
     @async.sleep(100)
     "Network request successful"
   })
-  
+
   // Exponential backoff retry
   let result3 = @async.retry(
     ExponentialDelay(initial=100, factor=2.0, maximum=5000),
@@ -704,12 +704,12 @@ async fn task_group_cleanup() -> Unit {
       println("Executing cleanup operations")
       // Clean up resources
     })
-    
+
     group.spawn_bg(fn() {
       @async.sleep(100)
       raise Failure("Task failed")  // Trigger cleanup
     })
-    
+
     @async.sleep(200)
   }) catch {
     err => println("Task group failed, cleanup executed: \{err}")
@@ -778,7 +778,7 @@ async fn cat_implementation() -> Unit {
 async fn queue_communication() -> Unit {
   @async.with_task_group(fn(group) {
     let queue = @async.Queue::new()
-    
+
     // Producer task
     group.spawn_bg(fn() {
       for i in 0..10 {
@@ -787,7 +787,7 @@ async fn queue_communication() -> Unit {
       }
       queue.close()
     })
-    
+
     // Consumer task
     group.spawn_bg(fn() {
       while queue.get() is Some(msg) {
@@ -803,7 +803,7 @@ async fn advanced_queue_patterns() -> Unit {
   @async.with_task_group(fn(group) {
     let request_queue = @async.Queue::new()
     let response_queue = @async.Queue::new()
-    
+
     // Worker pool pattern
     for worker_id in 0..3 {
       group.spawn_bg(fn() {
@@ -813,7 +813,7 @@ async fn advanced_queue_patterns() -> Unit {
         }
       })
     }
-    
+
     // Task dispatcher
     group.spawn_bg(fn() {
       for i in 0..10 {
@@ -821,7 +821,7 @@ async fn advanced_queue_patterns() -> Unit {
       }
       request_queue.close()
     })
-    
+
     // Result collector
     let mut completed = 0
     while response_queue.get() is Some(result) {
@@ -842,21 +842,21 @@ async fn advanced_queue_patterns() -> Unit {
 async fn buffered_io_examples() -> Unit {
   let file = @fs.open("large_file.txt", mode=ReadOnly)
   defer file.close()
-  
+
   // Buffered reader for efficient reading
   let reader = @io.BufferedReader::new(file)
-  
+
   // Search for patterns
   let pattern_pos = reader.find("target_pattern")
   println("Pattern found at position: \{pattern_pos}")
-  
+
   // Get specific bytes without advancing stream
   let first_byte = reader[0]
   let slice = reader[10:20]
-  
+
   // Drop unwanted data
   reader.drop(100)
-  
+
   // Continue reading normally
   let remaining = reader.read_all()
   println("Remaining content: \{remaining}")
@@ -866,15 +866,15 @@ async fn buffered_io_examples() -> Unit {
 async fn buffered_writer_example() -> Unit {
   let file = @fs.create("output.txt", permission=0o644)
   defer file.close()
-  
+
   let writer = @io.BufferedWriter::new(file)
   defer writer.flush()  // Ensure all data is written
-  
+
   // Efficient writing with buffering
   for i in 0..1000 {
     writer.write("Line \{i}\n")
   }
-  
+
   // Manual flush if needed
   writer.flush()
 }
@@ -889,10 +889,10 @@ async fn resource_management() -> Unit {
   // Always use defer to ensure resource cleanup
   let file = @fs.open("data.txt", mode=ReadOnly)
   defer file.close()
-  
+
   let conn = @socket.TCP::new()
   defer conn.close()
-  
+
   // Use file and connection...
 }
 ```
@@ -906,12 +906,12 @@ async fn error_handling_patterns() -> Unit {
     group.spawn_bg(fn() {
       critical_operation()
     })
-    
+
     // Optional task - failure doesn't affect other tasks
     group.spawn_bg(allow_failure=true, fn() {
       optional_operation()
     })
-    
+
     // Background task - automatically cancelled when task group ends
     group.spawn_bg(no_wait=true, fn() {
       background_monitoring()
@@ -927,17 +927,17 @@ async fn concurrency_patterns() -> Unit {
   // Limit concurrency
   @async.with_task_group(fn(group) {
     let semaphore = @async.Queue::new()
-    
+
     // Initialize semaphore
     for _ in 0..5 {
       semaphore.put(())
     }
-    
+
     for i in 0..20 {
       group.spawn_bg(fn() {
         let _permit = semaphore.get()  // Acquire permit
         defer semaphore.put(())        // Release permit
-        
+
         // Execute limited concurrency task
         expensive_operation(i)
       })
@@ -953,7 +953,7 @@ async fn long_computation() -> Unit {
   for i in 0..1000000 {
     // Perform computation
     heavy_calculation(i)
-    
+
     // Periodically yield execution
     if i % 1000 == 0 {
       @async.pause()
@@ -1021,7 +1021,7 @@ async fn good_task_management() {
 ///|
 async fn logging_example() -> Unit {
   @pipe.stderr.write("Starting request processing\n")
-  
+
   try {
     process_request()
   } catch {
@@ -1030,7 +1030,7 @@ async fn logging_example() -> Unit {
       raise err
     }
   }
-  
+
   @pipe.stderr.write("Request processing completed\n")
 }
 ```
@@ -1040,64 +1040,13 @@ async fn logging_example() -> Unit {
 ///|
 async fn performance_measurement() -> Unit {
   let start = @async.now()
-  
+
   expensive_operation()
-  
+
   let duration = @async.now() - start
   println("Operation took: \{duration} milliseconds")
 }
 ```
-
-## API Coverage Summary
-
-This guide covers the complete MoonBit async library API:
-
-### Core Async Operations
-- ✅ `@async.sleep`, `@async.pause`, `@async.now`
-- ✅ `@async.with_timeout`, `@async.with_timeout_opt`
-- ✅ `@async.protect_from_cancel`
-- ✅ `@async.retry` with different strategies
-- ✅ `@async.with_task_group`, task management
-
-### File System (`@fs`)
-- ✅ Basic operations: `open`, `create`, `read`, `write`, `remove`
-- ✅ Directory operations: `readdir`, `mkdir`, `rmdir`, `opendir`
-- ✅ File utilities: `exists`, `can_read`, `can_write`, `can_execute`
-- ✅ Path operations: `realpath`, `kind`
-- ✅ Convenience functions: `read_file`, `write_file`, `read_text_file`, `write_text_file`
-
-### Networking (`@socket`)
-- ✅ TCP: `TCPServer`, `TCP` client/server operations
-- ✅ UDP: `UDP` socket operations
-- ✅ Address parsing and DNS resolution
-
-### TLS Support (`@tls`)
-- ✅ TLS client connections with certificate verification
-- ✅ TLS server connections (testing API)
-- ✅ Graceful TLS shutdown
-
-### HTTP Support (`@http`)
-- ✅ HTTP client: `get`, `post` requests
-- ✅ HTTP server: `ServerConnection`, request handling
-- ✅ HTTP parsing and response generation
-
-### IO Abstractions (`@io`)
-- ✅ `Reader` and `Writer` traits
-- ✅ `BufferedReader` with search and slicing capabilities
-- ✅ `BufferedWriter` for efficient writing
-
-### Process Management (`@process`)
-- ✅ Process execution with `run`
-- ✅ Process communication with pipes
-- ✅ Environment variable handling
-
-### Inter-task Communication (`@async.Queue`)
-- ✅ Async queue for producer-consumer patterns
-- ✅ Worker pool implementations
-
-### Pipe Operations (`@pipe`)
-- ✅ Standard IO: `stdin`, `stdout`, `stderr`
-- ✅ Pipe creation and communication
 
 ## Summary
 
