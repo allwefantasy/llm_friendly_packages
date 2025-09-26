@@ -1196,3 +1196,10 @@ For asynchronous programming patterns, coroutines, and concurrent execution in M
 [moonbit-async.md](./moonbit-async.md)
 
 This covers async/await patterns, Promise-like constructs, and concurrent programming models available in MoonBit.
+
+## FFI
+
+For foreign function interface (FFI) support in MoonBit, see:
+[moonbit-ffi.md](./moonbit-ffi.md)
+
+This covers calling C functions from MoonBit, using C libraries, and interoperability with other languages.
