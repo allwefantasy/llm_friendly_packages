@@ -40,10 +40,12 @@ Add required packages to `moon.pkg.json`:
   "import": [
     "moonbitlang/async",
     "moonbitlang/async/socket",
+    "moonbitlang/async/tls",
     "moonbitlang/async/fs",
     "moonbitlang/async/io",
     "moonbitlang/async/http",
-    "moonbitlang/async/process"
+    "moonbitlang/async/process",
+    "moonbitlang/async/pipe"
   ]
 }
 ```
@@ -238,7 +240,7 @@ async fn advanced_file_ops() -> Unit {
   // Chunked reading
   let buf = FixedArray::make(1024, b'0')
   while file.read(buf) is n && n > 0 {
-    let arr = Array::from_fixed_array(buf)
+    let arr = buf.unsafe_reinterpret_as_bytes()[0:n]
     let _ = arr[:n]
     println("Read \{n} bytes")
   }
@@ -295,8 +297,8 @@ async fn directory_operations_advanced() -> Unit {
 ### File System Utilities
 
 ```moonbit
-///|
 async fn file_system_utilities() -> Unit {
+  // suppose example.txt and input.txt exists in this demo
   let path = "example.txt"
 
   // Check file existence and permissions
@@ -330,7 +332,7 @@ async fn file_system_utilities() -> Unit {
   @fs.write_file("output.txt", content, create=0o644)
 
   // Text file operations with encoding
-  let text = @fs.read_text_file("text.txt", encoding=UTF8)
+  let text = @fs.read_text_file("input.txt", encoding=UTF8)
   @fs.write_text_file("new_text.txt", text, encoding=UTF8, create=0o644)
 }
 ```
@@ -371,10 +373,9 @@ async fn tcp_echo_server() -> Unit {
 ```moonbit
 ///|
 async fn tcp_client() -> Unit {
-  let conn = @socket.TCP::new()
+  let port = 8080
+  let conn = @socket.TCP::connect(@socket.Addr::parse("127.0.0.1:\{port}"))
   defer conn.close()
-
-  conn.connect(@socket.Addr::parse("127.0.0.1:8080"))
 
   // Send data
   conn.write("Hello, Server!\n")
@@ -382,7 +383,7 @@ async fn tcp_client() -> Unit {
   // Read response
   let buf = FixedArray::make(1024, b'0')
   let n = conn.read(buf)
-  let response = buf[:n]
+  let response = buf.unsafe_reinterpret_as_bytes()[0:n]
   println("Server response: \{response}")
 }
 ```
@@ -398,12 +399,12 @@ async fn udp_example() -> Unit {
   sock.bind(@socket.Addr::parse("0.0.0.0:9090"))
 
   // Send data
-  sock.send_to("UDP message", @socket.Addr::parse("127.0.0.1:9091"))
+  sock.sendto("UDP message", @socket.Addr::parse("127.0.0.1:9091"))
 
   // Receive data
   let buf = FixedArray::make(1024, b'0')
-  let (n, from_addr) = sock.recv_from(buf)
-  let data = buf[:n]
+  let (n, from_addr) = sock.recvfrom(buf)
+  let data = buf.unsafe_reinterpret_as_bytes()[0:n]
   println("Received data from \{from_addr}: \{data}")
 }
 ```
@@ -415,34 +416,35 @@ async fn udp_example() -> Unit {
 ```moonbit
 ///|
 async fn tls_client_example() -> Unit {
-  // Connect to HTTPS server
-  let tcp_conn = @socket.TCP::new()
+  // Connect to HTTPS server using connect_to_host (like HTTP client does)
+  let tcp_conn = @socket.TCP::connect_to_host("github.com", port=443)
   defer tcp_conn.close()
-
-  tcp_conn.connect(@socket.Addr::parse("example.com:443"))
 
   // Create TLS connection
   let tls_conn = @tls.TLS::client(
     tcp_conn,
     verify=true,
-    host="example.com",
+    host="github.com",
     sni=true
   )
-  defer {
-    @async.with_timeout_opt(5000, fn() {
-      tls_conn.shutdown()  // Graceful TLS shutdown
-    }) |> ignore
-    tls_conn.close()
-  }
+  defer tls_conn.close()
 
   // Send HTTP request over TLS
-  tls_conn.write("GET / HTTP/1.1\r\nHost: example.com\r\n\r\n")
+  tls_conn.write("GET / HTTP/1.1\r\nHost: github.com\r\nConnection: close\r\n\r\n")
 
-  // Read response
+  // Read response in chunks
   let buf = FixedArray::make(4096, b'0')
-  let n = tls_conn.read(buf)
-  let response = buf[:n]
-  println("HTTPS Response: \{response}")
+  let total_response = StringBuilder::new()
+
+  while tls_conn.read(buf) is n && n > 0 {
+    let chunk = buf.unsafe_reinterpret_as_bytes()[0:n]
+    total_response.write_string(chunk.to_string())
+  }
+
+  println("HTTPS Response: \{total_response.to_string()}")
+
+  // Graceful TLS shutdown
+  tls_conn.shutdown()
 }
 ```
 
@@ -470,20 +472,21 @@ async fn tls_server_example() -> Unit {
           certificate_file="server.crt",
           certificate_type=PEM
         )
-        defer {
-          @async.with_timeout_opt(5000, fn() {
+
+        // Handle TLS connection
+        // handle_tls_request(tls_conn)
+
+        @async.with_timeout_opt(5000, fn() {
             tls_conn.shutdown()
           }) |> ignore
           tls_conn.close()
-        }
-
-        // Handle TLS connection
-        handle_tls_request(tls_conn)
       })
     }
   })
 }
 ```
+
+Notice that async function is not supported in `defer` yet.
 
 ## HTTP Programming
 
@@ -519,28 +522,36 @@ async fn serve_directory(
 ) -> Unit {
   let files = dir.read_all()
   files.sort()
-
   conn
   ..send_response(200, "OK", extra_headers={ "Content-Type": "text/html" })
-  ..write("<!DOCTYPE html><html><body>")
-  ..write_string("<h1>Directory: \{path}</h1>\n")
-  ..write("<ul>")
-
-  for file in files {
-    let sep = if path.ends_with("/") { "" } else { "/" }
-    conn.write_string("<li><a href=\"\{path}\{sep}\{file}\">\{file}</a></li>\n")
+  ..write("<!DOCTYPE html><html><head></head><body>")
+  ..write_string("<h1>\{path}</h1>\n", encoding=UTF8)
+  ..write("<div style=\"margin: 1em; font-size: 15pt\">")
+  ..write_string(
+    "<a href=\"\{path}?download_zip\">download as zip</a><br/><br/>\n",
+    encoding=UTF8,
+  )
+  if path[:-1].rev_find("/") is Some(index) {
+    let parent : StringView = if index == 0 { "/" } else { path[:index] }
+    conn.write_string("<a href=\"\{parent}\">..</a><br/><br/>\n", encoding=UTF8)
   }
-
-  conn..write("</ul></body></html>")..end_response()
+  for file in files {
+    let sep = if path[path.length() - 1] != '/' { "/" } else { "" }
+    conn.write_string(
+      "<a href=\"\{path}\{sep}\{file}\">\{file}</a><br/>\n",
+      encoding=UTF8,
+    )
+  }
+  conn..write("</div></body></html>")..end_response()
 }
 
 ///|
 async fn http_file_server() -> Unit {
   let base_path = "."
-  let server = @socket.TCPServer::new(@socket.Addr::parse("0.0.0.0:8000"))
+  let server = @socket.TCPServer::new(@socket.Addr::parse("0.0.0.0:8111"))
   defer server.close()
 
-  println("HTTP file server started on port 8000")
+  println("HTTP file server started on port 8111")
 
   @async.with_task_group(fn(ctx) {
     for {
@@ -594,17 +605,17 @@ async fn http_client_example() -> Unit {
   // GET request
   let (response, body) = @http.get("https://httpbin.org/get")
   println("Status code: \{response.code}")
-  println("Response body: \{body}")
+  println("Response body: \{body.text()}")
 
   // POST request
   let post_data = "{ \"key\": \"value\" }"
   let (response, body) = @http.post(
     "https://httpbin.org/post",
     post_data,
-    headers=[
-      @http.Header("Content-Type", "application/json"),
-      @http.Header("User-Agent", "MoonBit-HTTP/1.0")
-    ]
+    headers={
+      "Content-Type": "application/json",
+      "User-Agent": "MoonBit-HTTP/1.0"
+    }
   )
   println("POST response: \{response.code}")
 }
@@ -637,25 +648,26 @@ async fn process_operations() -> Unit {
 ///|
 async fn process_communication() -> Unit {
   @async.with_task_group(fn(group) {
-    let (read_from_process, write_to_process) = @process.read_from_process()
-    defer read_from_process.close()
+    let (cat_read, we_write) = @process.write_to_process()
+    let (we_read, cat_write) = @process.read_from_process()
+    defer we_read.close()
 
     // Start process
     group.spawn_bg(fn() {
-      @process.run("grep", ["async"], stdout=write_to_process)
+      @process.run("cat", ["-"], stdout=cat_write, stdin=cat_read)
       |> ignore
     })
 
     // Send data to process and read results
     group.spawn_bg(fn() {
-      write_to_process.write("async programming\nsync programming\nasync example\n")
-      write_to_process.close()
+      we_write.write("async programming\nsync programming\nasync example\n")
+      we_write.close()
     })
 
     // Read process output
     let buf = FixedArray::make(1024, b'0')
-    while read_from_process.read(buf) is n && n > 0 {
-      let output = buf[:n]
+    while we_read.read(buf) is n && n > 0 {
+      let output = buf.unsafe_reinterpret_as_bytes()[0:n]
       println("Process output: \{output}")
     }
   })
@@ -712,6 +724,7 @@ async fn critical_operations() -> Unit {
     })
   }) catch {
     @async.TimeoutError => println("Operation timed out, but critical part completed")
+    _ => println("Unknown error")
   }
 }
 ```
