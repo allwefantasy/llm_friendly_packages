@@ -134,7 +134,7 @@ test "basic string operations" {
 
   // Search
   inspect(s.contains("Moon"), content="true")
-  inspect(s.index_of("Moon"), content="Some(7)")
+  inspect(s.find("Moon"), content="Some(7)")
 }
 ```
 
@@ -146,9 +146,9 @@ test "string conversion" {
   let s = "  Hello World  "
 
   // Trim whitespace
-  inspect(s.trim(), content="Hello World")
-  inspect(s.trim_start(), content="Hello World  ")
-  inspect(s.trim_end(), content="  Hello World")
+  inspect(s.trim(" "), content="Hello World")
+  inspect(s.trim_start(" "), content="Hello World  ")
+  inspect(s.trim_end(" "), content="  Hello World")
 
   // Case conversion
   inspect(s.to_upper(), content="  HELLO WORLD  ")
@@ -159,7 +159,7 @@ test "string conversion" {
   inspect(parts, content="[\"a\", \"b\", \"c\"]")
 
   // Replace
-  let replaced = "hello world".replace("world", "MoonBit")
+  let replaced = "hello world".replace(old="world", new="MoonBit")
   inspect(replaced, content="hello MoonBit")
 }
 ```
@@ -272,10 +272,10 @@ test "array search" {
 
   // Find elements
   inspect(arr.contains(30), content="true")
-  inspect(arr.index_of(30), content="Some(2)")
+  inspect(arr.find(30), content="Some(2)")
 
   // First and last
-  inspect(arr.first(), content="Some(10)")
+  inspect(arr.head(), content="Some(10)")
   inspect(arr.last(), content="Some(50)")
 
   // Find elements matching condition
