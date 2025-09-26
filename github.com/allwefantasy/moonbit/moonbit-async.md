@@ -735,7 +735,8 @@ async fn critical_operations() -> Unit {
 ///|
 async fn task_group_cleanup() -> Unit {
   @async.with_task_group(fn(group) {
-    // Add cleanup function
+    // you can use group.add_defer to clean up resources instead using
+    // defer directly
     group.add_defer(fn() {
       println("Executing cleanup operations")
       // Clean up resources
@@ -759,7 +760,7 @@ async fn task_group_cleanup() -> Unit {
 
 ```moonbit
 ///|
-async fn main {
+async fn example_args() -> Unit {
   let args = @env.args()
   match args {
     [] | [_] => {
@@ -767,14 +768,17 @@ async fn main {
       println("Commands: server, client, test")
     }
     [_, "server", port] => {
-      let port_num = port.to_int() catch { _ => 8080 }
-      start_server(port_num)
+      let port_num = @strconv.parse_int(port) catch { _ => 8080 }
+      // start_server(port_num)
+      ...
     }
     [_, "client", host, port] => {
-      connect_client(host, port.to_int().unwrap())
+      // connect_client(host, port.to_int().unwrap())
+      ...
     }
     [_, "test"] => {
-      run_tests()
+      // run_tests()
+      ...
     }
     _ => println("Unknown command")
   }
