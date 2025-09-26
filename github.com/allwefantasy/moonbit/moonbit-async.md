@@ -1069,7 +1069,7 @@ async test "basic async operation" {
     @async.sleep(100)
     "completed"
   })
-  
+
   inspect(result, content="completed")
 }
 ```
@@ -1079,7 +1079,6 @@ async test "basic async operation" {
 ///|
 async test "task group coordination" {
   let log = StringBuilder::new()
-  
   @async.with_task_group(fn(group) {
     // Producer task
     group.spawn_bg(fn() {
@@ -1088,7 +1087,7 @@ async test "task group coordination" {
         log.write_string("produced \{i}\n")
       }
     })
-    
+
     // Consumer task
     group.spawn_bg(fn() {
       for i in 0..<3 {
@@ -1097,17 +1096,19 @@ async test "task group coordination" {
       }
     })
   })
-  
+
   // Verify the interleaved execution
   inspect(
     log.to_string(),
-    content=#|produced 0
-             #|produced 1
-             #|consumed 0
-             #|produced 2
-             #|consumed 1
-             #|consumed 2
-             #|
+    content=(
+      #|produced 0
+      #|produced 1
+      #|consumed 0
+      #|produced 2
+      #|consumed 1
+      #|consumed 2
+      #|
+    ),
   )
 }
 ```
@@ -1117,10 +1118,9 @@ async test "task group coordination" {
 ///|
 async test "queue producer-consumer" {
   let log = StringBuilder::new()
-  
   @async.with_task_group(fn(group) {
     let queue = @aqueue.Queue::new()
-    
+
     // Consumer task
     group.spawn_bg(fn() {
       for _ in 0..<3 {
@@ -1128,8 +1128,8 @@ async test "queue producer-consumer" {
         log.write_string("consumed: \{item}\n")
       }
     })
-    
-    // Producer task  
+
+    // Producer task
     group.spawn_bg(fn() {
       for i in 0..<3 {
         @async.sleep(20)
@@ -1138,68 +1138,17 @@ async test "queue producer-consumer" {
       }
     })
   })
-  
   inspect(
     log.to_string(),
-    content=#|produced: 0
-             #|consumed: 0
-             #|produced: 1
-             #|consumed: 1
-             #|produced: 2
-             #|consumed: 2
-             #|
-  )
-}
-```
-
-#### Testing Error Handling and Cancellation
-```moonbit
-///|
-async test "timeout and cancellation" {
-  let log = StringBuilder::new()
-  
-  @async.with_task_group(fn(group) {
-    let queue = @aqueue.Queue::new()
-    
-    // Long-running producer
-    group.spawn_bg(fn() {
-      for i in 0..<10 {
-        @async.sleep(100)
-        queue.put(i)
-        log.write_string("put(\{i})\n")
-      }
-    })
-    
-    // Consumer with timeout
-    @async.with_timeout(350, fn() {
-      for {
-        let item = queue.get() catch {
-          err => {
-            log.write_string("get() cancelled: \{err}\n")
-            raise err
-          }
-        }
-        log.write_string("get => \{item}\n")
-      }
-    }) catch {
-      @async.TimeoutError => log.write_string("timeout occurred\n")
-      err => raise err
-    }
-  })
-  
-  // Verify partial execution before timeout
-  inspect(
-    log.to_string(),
-    content=#|put(0)
-             #|get => 0
-             #|put(1)
-             #|get => 1
-             #|put(2)
-             #|get => 2
-             #|get() cancelled: Cancelled
-             #|timeout occurred
-             #|put(3)
-             #|
+    content=(
+      #|produced: 0
+      #|consumed: 0
+      #|produced: 1
+      #|consumed: 1
+      #|produced: 2
+      #|consumed: 2
+      #|
+    ),
   )
 }
 ```
@@ -1209,14 +1158,14 @@ async test "timeout and cancellation" {
 ///|
 test "synchronous queue operations" {
   let queue = @aqueue.Queue::new()
-  
+
   // Test empty queue
   inspect(queue.try_get(), content="None")
-  
+
   // Test with items
   queue.put(42)
   queue.put(100)
-  
+
   inspect(queue.try_get(), content="Some(42)")
   inspect(queue.try_get(), content="Some(100)")
   inspect(queue.try_get(), content="None")
@@ -1228,14 +1177,14 @@ test "synchronous queue operations" {
 ///|
 async test "file operations" {
   let test_content = "Hello, async world!"
-  
+
   // Write test file
   @fs.write_file("test_async.txt", test_content.to_bytes(), create=0o644)
-  
+
   // Read and verify
   let content = @fs.read_file("test_async.txt")
   inspect(content.text(), content="Hello, async world!")
-  
+
   // Cleanup
   @fs.remove("test_async.txt")
 }
@@ -1250,15 +1199,15 @@ async test "network timeout handling" {
     @async.sleep(200)  // Simulate slow network
     "connection established"
   })
-  
+
   inspect(result, content="None")  // Should timeout
-  
+
   // Test successful connection
   let result2 = @async.with_timeout_opt(200, fn() {
     @async.sleep(50)   // Fast connection
     "connection established"
   })
-  
+
   inspect(result2, content="Some(\"connection established\")")
 }
 ```
