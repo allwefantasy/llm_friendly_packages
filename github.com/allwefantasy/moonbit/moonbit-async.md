@@ -1,24 +1,24 @@
-# MoonBit 异步编程完全指南
+# MoonBit Asynchronous Programming Complete Guide
 
-MoonBit 异步编程库提供了完整的异步 IO 功能和结构化并发支持。本指南以实用为导向，通过丰富的代码示例介绍异步编程的核心概念和最佳实践。
+The MoonBit async library provides comprehensive asynchronous IO functionality and structured concurrency support. This guide is practice-oriented, introducing core concepts and best practices through rich code examples.
 
-## 核心特性概览
+## Core Features Overview
 
-- **结构化并发**: 任务组管理，自动错误传播和资源清理
-- **协作式多任务**: 单线程模型，无需锁机制
-- **全面的 IO 支持**: 文件系统、网络、进程、管道操作
-- **HTTP/TLS 支持**: 完整的 Web 开发能力
-- **任务取消**: 优雅的取消机制和超时控制
+- **Structured Concurrency**: Task group management with automatic error propagation and resource cleanup
+- **Cooperative Multitasking**: Single-threaded model without locks
+- **Comprehensive IO Support**: File system, networking, process, and pipe operations
+- **HTTP/TLS Support**: Complete web development capabilities
+- **Task Cancellation**: Graceful cancellation mechanisms and timeout control
 
-## 快速开始
+## Quick Start
 
-### 安装配置
+### Installation and Setup
 
 ```bash
 moon add moonbitlang/async@0.7.0
 ```
 
-在 `moon.pkg.json` 中添加所需包：
+Add required packages to `moon.pkg.json`:
 
 ```json
 {
@@ -32,119 +32,119 @@ moon add moonbitlang/async@0.7.0
 }
 ```
 
-### 基础异步程序结构
+### Basic Async Program Structure
 
 ```moonbit
 ///|
 async fn main {
   println("Hello, Async World!")
-  @async.sleep(1000)  // 等待 1 秒
+  @async.sleep(1000)  // Wait for 1 second
   println("Done!")
 }
 ```
 
-**关键变化**: 现在直接使用 `async fn main`，不再需要 `@async.with_event_loop` 包装。
+**Key Change**: Now use `async fn main` directly, no longer need `@async.with_event_loop` wrapper.
 
-## 异步操作基础
+## Asynchronous Operations Basics
 
-### 核心异步函数
+### Core Async Functions
 
 ```moonbit
 ///|
 async fn basic_operations() -> Unit {
-  // 休眠 - 让出执行权给其他任务
-  @async.sleep(500)  // 500 毫秒
+  // Sleep - yield execution to other tasks
+  @async.sleep(500)  // 500 milliseconds
   
-  // 暂停 - 主动让出执行权
+  // Pause - actively yield execution
   @async.pause()
   
-  // 获取当前时间戳
+  // Get current timestamp
   let now = @async.now()
-  println("当前时间: \{now}")
+  println("Current time: \{now}")
 }
 ```
 
-### 超时控制
+### Timeout Control
 
 ```moonbit
 ///|
 async fn timeout_examples() -> Unit {
-  // 超时后抛出错误
+  // Throw error after timeout
   try {
     @async.with_timeout(1000, fn() {
-      @async.sleep(2000)  // 会超时
-      "不会执行到这里"
+      @async.sleep(2000)  // Will timeout
+      "Won't reach here"
     })
   } catch {
-    @async.TimeoutError => println("操作超时")
+    @async.TimeoutError => println("Operation timed out")
   }
   
-  // 超时后返回 None
+  // Return None after timeout
   let result = @async.with_timeout_opt(1000, fn() {
     @async.sleep(500)
-    "成功完成"
+    "Completed successfully"
   })
   
   match result {
-    Some(value) => println("结果: \{value}")
-    None => println("操作超时")
+    Some(value) => println("Result: \{value}")
+    None => println("Operation timed out")
   }
 }
 ```
 
-## 结构化并发与任务组
+## Structured Concurrency and Task Groups
 
-### 任务组基础
+### Task Group Basics
 
 ```moonbit
 ///|
 async fn task_group_basics() -> Unit {
   @async.with_task_group(fn(group) {
-    // 生成后台任务
+    // Spawn background task
     group.spawn_bg(fn() {
       @async.sleep(100)
-      println("后台任务完成")
+      println("Background task completed")
     })
     
-    // 生成有返回值的任务
+    // Spawn task with return value
     let task = group.spawn(fn() {
       @async.sleep(200)
       42
     })
     
     let result = task.wait()
-    println("任务结果: \{result}")
+    println("Task result: \{result}")
     
-    "任务组返回值"
+    "Task group return value"
   }) |> println
 }
 ```
 
-### 任务选项控制
+### Task Option Control
 
 ```moonbit
 ///|
 async fn task_options() -> Unit {
   @async.with_task_group(fn(group) {
-    // 允许失败的任务
+    // Task that's allowed to fail
     group.spawn_bg(allow_failure=true, fn() {
       @async.sleep(50)
-      raise Failure("这个错误不会影响整个任务组")
+      raise Failure("This error won't affect the entire task group")
     })
     
-    // 不等待的任务 - 任务组结束时自动取消
+    // No-wait task - automatically cancelled when task group ends
     group.spawn_bg(no_wait=true, fn() {
-      @async.sleep(10000)  // 很长的任务
-      println("这行不会执行")
+      @async.sleep(10000)  // Very long task
+      println("This line won't execute")
     })
     
     @async.sleep(100)
-    println("任务组正常结束")
+    println("Task group completed normally")
   })
 }
 ```
 
-### 错误传播示例
+### Error Propagation Example
 
 ```moonbit
 ///|
@@ -153,53 +153,53 @@ async fn error_propagation() -> Unit {
     @async.with_task_group(fn(group) {
       group.spawn_bg(fn() {
         @async.sleep(100)
-        println("任务 1 正常运行")
+        println("Task 1 running normally")
       })
       
       group.spawn_bg(fn() {
         @async.sleep(50)
-        raise Failure("任务 2 失败")  // 这会导致整个任务组失败
+        raise Failure("Task 2 failed")  // This will cause the entire task group to fail
       })
       
       @async.sleep(200)
-      println("这行不会执行")
+      println("This line won't execute")
     })
   } catch {
-    err => println("任务组失败: \{err}")
+    err => println("Task group failed: \{err}")
   }
 }
 ```
 
-## 文件系统操作
+## File System Operations
 
-### 文件读写
+### File Read/Write
 
 ```moonbit
 ///|
 async fn file_operations() -> Unit {
-  // 创建并写入文件
+  // Create and write to file
   {
     let file = @fs.create("test.txt", permission=0o644)
     defer file.close()
-    file.write("Hello, World!\n第二行内容")
+    file.write("Hello, World!\nSecond line content")
   }
   
-  // 读取文件
+  // Read file
   {
     let file = @fs.open("test.txt", mode=ReadOnly)
     defer file.close()
     
     let content = file.read_all()
-    println("文件内容: \{content}")
-    println("文件大小: \{file.size()} 字节")
+    println("File content: \{content}")
+    println("File size: \{file.size()} bytes")
   }
   
-  // 删除文件
+  // Delete file
   @fs.remove("test.txt")
 }
 ```
 
-### 高级文件操作
+### Advanced File Operations
 
 ```moonbit
 ///|
@@ -207,22 +207,22 @@ async fn advanced_file_ops() -> Unit {
   let file = @fs.open("data.txt", mode=ReadWrite, create=0o644, truncate=true)
   defer file.close()
   
-  // 写入数据
+  // Write data
   file.write("Line 1\nLine 2\nLine 3\n")
   
-  // 移动文件指针
+  // Move file pointer
   file.seek(0, mode=FromStart)
   
-  // 分块读取
+  // Chunked reading
   let buf = FixedArray::make(1024, b'0')
   while file.read(buf) is n && n > 0 {
     let data = buf[:n]
-    println("读取 \{n} 字节")
+    println("Read \{n} bytes")
   }
 }
 ```
 
-### 目录操作
+### Directory Operations
 
 ```moonbit
 ///|
@@ -235,14 +235,14 @@ async fn directory_operations() -> Unit {
   files.sort()
   
   for file in files {
-    println("文件: \{file}")
+    println("File: \{file}")
   }
 }
 ```
 
-## 网络编程
+## Network Programming
 
-### TCP 回显服务器
+### TCP Echo Server
 
 ```moonbit
 ///|
@@ -251,19 +251,19 @@ async fn tcp_echo_server() -> Unit {
     let server = @socket.TCPServer::new(@socket.Addr::parse("127.0.0.1:8080"))
     defer server.close()
     
-    println("TCP 服务器启动在端口 8080")
+    println("TCP server started on port 8080")
     
     for {
       let (conn, addr) = server.accept()
-      println("新连接来自: \{addr}")
+      println("New connection from: \{addr}")
       
       root.spawn_bg(allow_failure=true, fn() {
         defer {
           conn.close()
-          println("连接已关闭")
+          println("Connection closed")
         }
         
-        // 回显所有数据
+        // Echo all data
         conn.write_reader(conn)
       })
     }
@@ -271,7 +271,7 @@ async fn tcp_echo_server() -> Unit {
 }
 ```
 
-### TCP 客户端
+### TCP Client
 
 ```moonbit
 ///|
@@ -281,18 +281,18 @@ async fn tcp_client() -> Unit {
   
   conn.connect(@socket.Addr::parse("127.0.0.1:8080"))
   
-  // 发送数据
+  // Send data
   conn.write("Hello, Server!\n")
   
-  // 读取响应
+  // Read response
   let buf = FixedArray::make(1024, b'0')
   let n = conn.read(buf)
   let response = buf[:n]
-  println("服务器响应: \{response}")
+  println("Server response: \{response}")
 }
 ```
 
-### UDP 示例
+### UDP Example
 
 ```moonbit
 ///|
@@ -302,20 +302,20 @@ async fn udp_example() -> Unit {
   
   sock.bind(@socket.Addr::parse("0.0.0.0:9090"))
   
-  // 发送数据
-  sock.send_to("UDP 消息", @socket.Addr::parse("127.0.0.1:9091"))
+  // Send data
+  sock.send_to("UDP message", @socket.Addr::parse("127.0.0.1:9091"))
   
-  // 接收数据
+  // Receive data
   let buf = FixedArray::make(1024, b'0')
   let (n, from_addr) = sock.recv_from(buf)
   let data = buf[:n]
-  println("收到来自 \{from_addr} 的数据: \{data}")
+  println("Received data from \{from_addr}: \{data}")
 }
 ```
 
-## HTTP 编程
+## HTTP Programming
 
-### HTTP 文件服务器
+### HTTP File Server
 
 ```moonbit
 ///|
@@ -351,7 +351,7 @@ async fn serve_directory(
   conn
   ..send_response(200, "OK", extra_headers={ "Content-Type": "text/html" })
   ..write("<!DOCTYPE html><html><body>")
-  ..write_string("<h1>目录: \{path}</h1>\n")
+  ..write_string("<h1>Directory: \{path}</h1>\n")
   ..write("<ul>")
   
   for file in files {
@@ -368,13 +368,13 @@ async fn http_file_server() -> Unit {
   let server = @socket.TCPServer::new(@socket.Addr::parse("0.0.0.0:8000"))
   defer server.close()
   
-  println("HTTP 文件服务器启动在端口 8000")
+  println("HTTP file server started on port 8000")
   
   @async.with_task_group(fn(ctx) {
     for {
       let (tcp_conn, addr) = server.accept()
       let conn = @http.ServerConnection::new(tcp_conn)
-      println("新连接来自: \{addr}")
+      println("New connection from: \{addr}")
       
       ctx.spawn_bg(allow_failure=true, fn() {
         defer conn.close()
@@ -388,7 +388,7 @@ async fn http_file_server() -> Unit {
                 _ => {
                   conn
                   ..send_response(404, "Not Found", extra_headers={ "Content-Type": "text/html" })
-                  ..write("<h1>404 - 文件未找到</h1>")
+                  ..write("<h1>404 - File Not Found</h1>")
                   ..end_response()
                   continue
                 }
@@ -414,17 +414,17 @@ async fn http_file_server() -> Unit {
 }
 ```
 
-### HTTP 客户端请求
+### HTTP Client Requests
 
 ```moonbit
 ///|
 async fn http_client_example() -> Unit {
-  // GET 请求
+  // GET request
   let (response, body) = @http.get("https://httpbin.org/get")
-  println("状态码: \{response.code}")
-  println("响应体: \{body}")
+  println("Status code: \{response.code}")
+  println("Response body: \{body}")
   
-  // POST 请求
+  // POST request
   let post_data = "{ \"key\": \"value\" }"
   let (response, body) = @http.post(
     "https://httpbin.org/post",
@@ -434,22 +434,22 @@ async fn http_client_example() -> Unit {
       @http.Header("User-Agent", "MoonBit-HTTP/1.0")
     ]
   )
-  println("POST 响应: \{response.code}")
+  println("POST response: \{response.code}")
 }
 ```
 
-## 进程管理
+## Process Management
 
-### 基础进程操作
+### Basic Process Operations
 
 ```moonbit
 ///|
 async fn process_operations() -> Unit {
-  // 运行简单命令
+  // Run simple command
   let exit_code = @process.run("ls", ["-la"])
-  println("命令退出码: \{exit_code}")
+  println("Command exit code: \{exit_code}")
   
-  // 带环境变量的命令
+  // Command with environment variables
   @process.run(
     "env",
     [],
@@ -459,7 +459,7 @@ async fn process_operations() -> Unit {
 }
 ```
 
-### 进程间通信
+### Inter-Process Communication
 
 ```moonbit
 ///|
@@ -468,109 +468,109 @@ async fn process_communication() -> Unit {
     let (read_from_process, write_to_process) = @process.read_from_process()
     defer read_from_process.close()
     
-    // 启动进程
+    // Start process
     group.spawn_bg(fn() {
       @process.run("grep", ["async"], stdout=write_to_process)
       |> ignore
     })
     
-    // 向进程发送数据并读取结果
+    // Send data to process and read results
     group.spawn_bg(fn() {
       write_to_process.write("async programming\nsync programming\nasync example\n")
       write_to_process.close()
     })
     
-    // 读取进程输出
+    // Read process output
     let buf = FixedArray::make(1024, b'0')
     while read_from_process.read(buf) is n && n > 0 {
       let output = buf[:n]
-      println("进程输出: \{output}")
+      println("Process output: \{output}")
     }
   })
 }
 ```
 
-## 高级特性
+## Advanced Features
 
-### 重试机制
+### Retry Mechanisms
 
 ```moonbit
 ///|
 async fn retry_examples() -> Unit {
-  // 立即重试
+  // Immediate retry
   let result1 = @async.retry(Immediate, max_retry=3, fn() {
     if @async.now() % 2 == 0 {
-      raise Failure("随机失败")
+      raise Failure("Random failure")
     }
-    "成功"
+    "Success"
   })
   
-  // 固定延迟重试
+  // Fixed delay retry
   let result2 = @async.retry(FixedDelay(1000), max_retry=5, fn() {
-    println("尝试网络请求...")
-    // 模拟网络请求
+    println("Attempting network request...")
+    // Simulate network request
     @async.sleep(100)
-    "网络请求成功"
+    "Network request successful"
   })
   
-  // 指数退避重试
+  // Exponential backoff retry
   let result3 = @async.retry(
     ExponentialDelay(initial=100, factor=2.0, maximum=5000),
     max_retry=10,
     fn() {
-      println("尝试连接服务...")
+      println("Attempting to connect to service...")
       @async.sleep(50)
-      "连接成功"
+      "Connection successful"
     }
   )
 }
 ```
 
-### 防止取消保护
+### Cancellation Protection
 
 ```moonbit
 ///|
 async fn critical_operations() -> Unit {
   @async.with_timeout(100, fn() {
     @async.protect_from_cancel(fn() {
-      // 这个操作不会被取消中断
-      println("开始关键操作...")
-      @async.sleep(200)  // 即使超时也会完成
-      println("关键操作完成")
+      // This operation won't be interrupted by cancellation
+      println("Starting critical operation...")
+      @async.sleep(200)  // Will complete even if timeout occurs
+      println("Critical operation completed")
     })
   }) catch {
-    @async.TimeoutError => println("操作超时，但关键部分已完成")
+    @async.TimeoutError => println("Operation timed out, but critical part completed")
   }
 }
 ```
 
-### 任务组清理
+### Task Group Cleanup
 
 ```moonbit
 ///|
 async fn task_group_cleanup() -> Unit {
   @async.with_task_group(fn(group) {
-    // 添加清理函数
+    // Add cleanup function
     group.add_defer(fn() {
-      println("执行清理操作")
-      // 清理资源
+      println("Executing cleanup operations")
+      // Clean up resources
     })
     
     group.spawn_bg(fn() {
       @async.sleep(100)
-      raise Failure("任务失败")  // 触发清理
+      raise Failure("Task failed")  // Trigger cleanup
     })
     
     @async.sleep(200)
   }) catch {
-    err => println("任务组失败，清理已执行: \{err}")
+    err => println("Task group failed, cleanup executed: \{err}")
   }
 }
 ```
 
-## 实用工具与模式
+## Utilities and Patterns
 
-### 命令行参数处理
+### Command Line Argument Processing
 
 ```moonbit
 ///|
@@ -578,8 +578,8 @@ async fn main {
   let args = @env.args()
   match args {
     [] | [_] => {
-      println("用法: program <命令> [参数...]")
-      println("命令: server, client, test")
+      println("Usage: program <command> [args...]")
+      println("Commands: server, client, test")
     }
     [_, "server", port] => {
       let port_num = port.to_int() catch { _ => 8080 }
@@ -591,12 +591,12 @@ async fn main {
     [_, "test"] => {
       run_tests()
     }
-    _ => println("未知命令")
+    _ => println("Unknown command")
   }
 }
 ```
 
-### Cat 工具实现
+### Cat Tool Implementation
 
 ```moonbit
 ///|
@@ -604,7 +604,7 @@ async fn cat_implementation() -> Unit {
   let args = @env.args()
   match args {
     [] | [_] => {
-      // 从标准输入读取
+      // Read from standard input
       @pipe.stdout.write_reader(@pipe.stdin)
     }
     [_, .. files] => {
@@ -622,7 +622,7 @@ async fn cat_implementation() -> Unit {
 }
 ```
 
-### 异步队列通信
+### Async Queue Communication
 
 ```moonbit
 ///|
@@ -630,59 +630,59 @@ async fn queue_communication() -> Unit {
   @async.with_task_group(fn(group) {
     let queue = @async.Queue::new()
     
-    // 生产者任务
+    // Producer task
     group.spawn_bg(fn() {
       for i in 0..10 {
-        queue.put("消息 \{i}")
+        queue.put("Message \{i}")
         @async.sleep(100)
       }
       queue.close()
     })
     
-    // 消费者任务
+    // Consumer task
     group.spawn_bg(fn() {
       while queue.get() is Some(msg) {
-        println("收到: \{msg}")
+        println("Received: \{msg}")
       }
-      println("队列已关闭")
+      println("Queue closed")
     })
   })
 }
 ```
 
-## 性能优化与最佳实践
+## Performance Optimization and Best Practices
 
-### 1. 资源管理
+### 1. Resource Management
 ```moonbit
 ///|
 async fn resource_management() -> Unit {
-  // 总是使用 defer 确保资源释放
+  // Always use defer to ensure resource cleanup
   let file = @fs.open("data.txt", mode=ReadOnly)
   defer file.close()
   
   let conn = @socket.TCP::new()
   defer conn.close()
   
-  // 使用文件和连接...
+  // Use file and connection...
 }
 ```
 
-### 2. 错误处理策略
+### 2. Error Handling Strategies
 ```moonbit
 ///|
 async fn error_handling_patterns() -> Unit {
   @async.with_task_group(fn(group) {
-    // 关键任务 - 失败时整个任务组失败
+    // Critical task - entire task group fails if this fails
     group.spawn_bg(fn() {
       critical_operation()
     })
     
-    // 可选任务 - 失败不影响其他任务
+    // Optional task - failure doesn't affect other tasks
     group.spawn_bg(allow_failure=true, fn() {
       optional_operation()
     })
     
-    // 后台任务 - 任务组结束时自动取消
+    // Background task - automatically cancelled when task group ends
     group.spawn_bg(no_wait=true, fn() {
       background_monitoring()
     })
@@ -690,25 +690,25 @@ async fn error_handling_patterns() -> Unit {
 }
 ```
 
-### 3. 并发控制
+### 3. Concurrency Control
 ```moonbit
 ///|
 async fn concurrency_patterns() -> Unit {
-  // 限制并发数量
+  // Limit concurrency
   @async.with_task_group(fn(group) {
     let semaphore = @async.Queue::new()
     
-    // 初始化信号量
+    // Initialize semaphore
     for _ in 0..5 {
       semaphore.put(())
     }
     
     for i in 0..20 {
       group.spawn_bg(fn() {
-        let _permit = semaphore.get()  // 获取许可
-        defer semaphore.put(())        // 释放许可
+        let _permit = semaphore.get()  // Acquire permit
+        defer semaphore.put(())        // Release permit
         
-        // 执行有限并发的任务
+        // Execute limited concurrency task
         expensive_operation(i)
       })
     }
@@ -716,15 +716,15 @@ async fn concurrency_patterns() -> Unit {
 }
 ```
 
-### 4. 长时间计算的暂停
+### 4. Yielding During Long Computations
 ```moonbit
 ///|
 async fn long_computation() -> Unit {
   for i in 0..1000000 {
-    // 执行计算
+    // Perform computation
     heavy_calculation(i)
     
-    // 定期让出执行权
+    // Periodically yield execution
     if i % 1000 == 0 {
       @async.pause()
     }
@@ -732,80 +732,80 @@ async fn long_computation() -> Unit {
 }
 ```
 
-## 常见陷阱与注意事项
+## Common Pitfalls and Considerations
 
-### 1. 避免阻塞操作
+### 1. Avoid Blocking Operations
 ```moonbit
-// ❌ 错误 - 阻塞整个程序
+// ❌ Wrong - blocks entire program
 fn blocking_operation() {
-  // 长时间的同步计算或阻塞 IO
+  // Long synchronous computation or blocking IO
 }
 
-// ✅ 正确 - 使用异步操作
+// ✅ Correct - use async operations
 async fn non_blocking_operation() {
-  // 使用 @async.sleep, @fs.*, @socket.* 等异步 API
-  @async.pause()  // 主动让出执行权
+  // Use @async.sleep, @fs.*, @socket.* and other async APIs
+  @async.pause()  // Actively yield execution
 }
 ```
 
-### 2. 正确的错误传播
+### 2. Proper Error Propagation
 ```moonbit
-// ❌ 错误 - 忽略错误
+// ❌ Wrong - ignoring errors
 async fn bad_error_handling() {
-  risky_operation() catch { _ => () }  // 静默忽略错误
+  risky_operation() catch { _ => () }  // Silently ignore errors
 }
 
-// ✅ 正确 - 适当处理错误
+// ✅ Correct - properly handle errors
 async fn good_error_handling() {
   risky_operation() catch {
     err => {
       log_error(err)
-      // 根据需要重新抛出或处理
+      // Re-throw or handle as needed
       raise err
     }
   }
 }
 ```
 
-### 3. 任务生命周期管理
+### 3. Task Lifecycle Management
 ```moonbit
-// ❌ 错误 - 可能的资源泄漏
+// ❌ Wrong - potential resource leak
 async fn bad_task_management() {
   let task = group.spawn(fn() { long_running_task() })
-  // 忘记等待任务完成
+  // Forgot to wait for task completion
 }
 
-// ✅ 正确 - 明确的生命周期
+// ✅ Correct - explicit lifecycle
 async fn good_task_management() {
   @async.with_task_group(fn(group) {
     group.spawn_bg(fn() { long_running_task() })
-    // 任务组确保所有任务完成
+    // Task group ensures all tasks complete
   })
 }
 ```
 
-## 调试与测试
+## Debugging and Testing
 
-### 日志记录
+### Logging
 ```moonbit
 ///|
 async fn logging_example() -> Unit {
-  @pipe.stderr.write("开始处理请求\n")
+  @pipe.stderr.write("Starting request processing\n")
   
   try {
     process_request()
   } catch {
     err => {
-      @pipe.stderr.write("处理失败: \{err}\n")
+      @pipe.stderr.write("Processing failed: \{err}\n")
       raise err
     }
   }
   
-  @pipe.stderr.write("请求处理完成\n")
+  @pipe.stderr.write("Request processing completed\n")
 }
 ```
 
-### 性能测量
+### Performance Measurement
 ```moonbit
 ///|
 async fn performance_measurement() -> Unit {
@@ -814,17 +814,17 @@ async fn performance_measurement() -> Unit {
   expensive_operation()
   
   let duration = @async.now() - start
-  println("操作耗时: \{duration} 毫秒")
+  println("Operation took: \{duration} milliseconds")
 }
 ```
 
-## 总结
+## Summary
 
-MoonBit 异步编程库通过结构化并发提供了强大而安全的异步编程能力：
+The MoonBit async library provides powerful and safe asynchronous programming capabilities through structured concurrency:
 
-- **简单**: 直接使用 `async fn main`，无需复杂的事件循环设置
-- **安全**: 结构化并发确保无资源泄漏和错误传播
-- **高效**: 协作式多任务模型，无锁编程
-- **完整**: 涵盖文件、网络、HTTP、进程等所有 IO 需求
+- **Simple**: Use `async fn main` directly, no complex event loop setup required
+- **Safe**: Structured concurrency ensures no resource leaks and proper error propagation
+- **Efficient**: Cooperative multitasking model without locks
+- **Complete**: Covers all IO needs including files, networking, HTTP, and processes
 
-掌握任务组的使用模式和错误处理机制是成功使用该库的关键。通过合理的任务分解和资源管理，可以构建出高性能、可维护的异步应用程序。
+Mastering task group usage patterns and error handling mechanisms is key to successfully using this library. Through proper task decomposition and resource management, you can build high-performance, maintainable asynchronous applications.
