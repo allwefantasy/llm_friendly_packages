@@ -25,7 +25,7 @@ moon add moonbitlang/async@0.7.0
   "name": "your-project-name",
   "version": "0.1.0",
   "deps": {
-    "moonbitlang/async": "0.7.0"
+    "moonbitlang/async": "0.8.0"
   },
   "preferred-target": "native"
 }
@@ -45,7 +45,8 @@ Add required packages to `moon.pkg.json`:
     "moonbitlang/async/io",
     "moonbitlang/async/http",
     "moonbitlang/async/process",
-    "moonbitlang/async/pipe"
+    "moonbitlang/async/pipe",
+    "moonbitlang/async/aqueue"
   ]
 }
 ```
@@ -213,7 +214,10 @@ async fn file_operations() -> Unit {
     let file = @fs.open("test.txt", mode=ReadOnly)
     defer file.close()
     // encoding is included in standard library so you can use it directly
-    let content = @encoding/utf8.decode(file.read_all())
+    // file.read_all().binary() is Bytes
+    // file.read_all().text() is String
+    // file.read_all().json() is Json
+    let content = @encoding/utf8.decode(file.read_all().binary())
     println("File content: \{content}")
     println("File size: \{file.size()} bytes")
   }
@@ -329,11 +333,13 @@ async fn file_system_utilities() -> Unit {
 
   // Convenient file operations
   let content = @fs.read_file("input.txt")
-  @fs.write_file("output.txt", content, create=0o644)
+  @fs.write_file("output.txt", content.binary(), create=0o644)
 
   // Text file operations with encoding
-  let text = @fs.read_text_file("input.txt", encoding=UTF8)
-  @fs.write_text_file("new_text.txt", text, encoding=UTF8, create=0o644)
+  // let text = @fs.read_text_file("input.txt", encoding=UTF8)
+  let text = @fs.read_file("input.txt").text()
+  // @fs.write_text_file("new_text.txt", text, encoding=UTF8, create=0o644)
+  @fs.write_file("new_text.txt", text.to_bytes())
 }
 ```
 
@@ -823,7 +829,7 @@ Usage examples:
 # Read from stdin
 echo "Hello World" | ./cat
 
-# Read single file  
+# Read single file
 ./cat file.txt
 
 # Read multiple files
@@ -841,60 +847,29 @@ echo "Hello World" | ./cat
 ///|
 async fn queue_communication() -> Unit {
   @async.with_task_group(fn(group) {
-    let queue = @async.Queue::new()
+    let queue = @aqueue.Queue::new()
 
     // Producer task
     group.spawn_bg(fn() {
-      for i in 0..10 {
+      for i in 0..<10 {
         queue.put("Message \{i}")
         @async.sleep(100)
       }
-      queue.close()
     })
 
     // Consumer task
-    group.spawn_bg(fn() {
-      while queue.get() is Some(msg) {
-        println("Received: \{msg}")
-      }
-      println("Queue closed")
-    })
-  })
-}
-
-///|
-async fn advanced_queue_patterns() -> Unit {
-  @async.with_task_group(fn(group) {
-    let request_queue = @async.Queue::new()
-    let response_queue = @async.Queue::new()
-
-    // Worker pool pattern
-    for worker_id in 0..3 {
+    @async.with_timeout(10000, fn() {
       group.spawn_bg(fn() {
-        while request_queue.get() is Some(task) {
-          let result = process_task(task)
-          response_queue.put("Worker \{worker_id}: \{result}")
+
+        for {
+          let msg = queue.get() catch {
+            _ => break
+          }
+          println("Received: \{msg}")
         }
+        println("Queue closed")
       })
-    }
-
-    // Task dispatcher
-    group.spawn_bg(fn() {
-      for i in 0..10 {
-        request_queue.put("Task \{i}")
-      }
-      request_queue.close()
     })
-
-    // Result collector
-    let mut completed = 0
-    while response_queue.get() is Some(result) {
-      println("Completed: \{result}")
-      completed += 1
-      if completed >= 10 {
-        break
-      }
-    }
   })
 }
 ```
@@ -923,7 +898,7 @@ async fn buffered_io_examples() -> Unit {
 
   // Continue reading normally
   let remaining = reader.read_all()
-  println("Remaining content: \{remaining}")
+  println("Remaining content: \{remaining.text()}")
 }
 
 ///|
@@ -932,10 +907,9 @@ async fn buffered_writer_example() -> Unit {
   defer file.close()
 
   let writer = @io.BufferedWriter::new(file)
-  defer writer.flush()  // Ensure all data is written
 
   // Efficient writing with buffering
-  for i in 0..1000 {
+  for i in 0..<1000 {
     writer.write("Line \{i}\n")
   }
 
@@ -968,17 +942,20 @@ async fn error_handling_patterns() -> Unit {
   @async.with_task_group(fn(group) {
     // Critical task - entire task group fails if this fails
     group.spawn_bg(fn() {
-      critical_operation()
+      // critical_operation()
+      ...
     })
 
     // Optional task - failure doesn't affect other tasks
     group.spawn_bg(allow_failure=true, fn() {
-      optional_operation()
+      // optional_operation()
+      ...
     })
 
     // Background task - automatically cancelled when task group ends
     group.spawn_bg(no_wait=true, fn() {
-      background_monitoring()
+      // background_monitoring()
+      ...
     })
   })
 }
@@ -993,17 +970,17 @@ async fn concurrency_patterns() -> Unit {
     let semaphore = @async.Queue::new()
 
     // Initialize semaphore
-    for _ in 0..5 {
+    for _ in 0..<5 {
       semaphore.put(())
     }
 
-    for i in 0..20 {
+    for i in 0..<20 {
       group.spawn_bg(fn() {
         let _permit = semaphore.get()  // Acquire permit
         defer semaphore.put(())        // Release permit
 
         // Execute limited concurrency task
-        expensive_operation(i)
+        //expensive_operation(i)
       })
     }
   })
@@ -1014,9 +991,9 @@ async fn concurrency_patterns() -> Unit {
 ```moonbit
 ///|
 async fn long_computation() -> Unit {
-  for i in 0..1000000 {
+  for i in 0..<1000000 {
     // Perform computation
-    heavy_calculation(i)
+    // heavy_calculation(i)
 
     // Periodically yield execution
     if i % 1000 == 0 {
@@ -1087,7 +1064,8 @@ async fn logging_example() -> Unit {
   @pipe.stderr.write("Starting request processing\n")
 
   try {
-    process_request()
+    //process_request()
+    ...
   } catch {
     err => {
       @pipe.stderr.write("Processing failed: \{err}\n")
@@ -1105,7 +1083,8 @@ async fn logging_example() -> Unit {
 async fn performance_measurement() -> Unit {
   let start = @async.now()
 
-  expensive_operation()
+  // expensive_operation()
+  println("===")
 
   let duration = @async.now() - start
   println("Operation took: \{duration} milliseconds")
