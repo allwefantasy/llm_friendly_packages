@@ -64,6 +64,8 @@ async fn basic_operations() -> Unit {
 }
 ```
 
+Notice that in MoonBit, there is no `await` keyword, the language will automatically handle the asynchronous execution if the code in this function is asynchronous.
+
 ### Timeout Control
 
 ```moonbit
