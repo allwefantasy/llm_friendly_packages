@@ -811,6 +811,30 @@ async fn cat_implementation() -> Unit {
 }
 ```
 
+This implementation demonstrates several key async programming patterns:
+- **Command line argument processing** using pattern matching
+- **Resource management** with `defer` for automatic cleanup
+- **Efficient IO streaming** using `write_reader` to copy data without buffering entire files
+- **Standard input/output handling** through the `@pipe` module
+- **Multiple file processing** in a single program
+
+Usage examples:
+```bash
+# Read from stdin
+echo "Hello World" | ./cat
+
+# Read single file  
+./cat file.txt
+
+# Read multiple files
+./cat file1.txt file2.txt file3.txt
+
+# Mix files and stdin
+./cat file1.txt - file2.txt  # "-" represents stdin
+```
+
+
+
 ### Async Queue Communication
 
 ```moonbit
