@@ -39,8 +39,9 @@ Add required packages to `moon.pkg.json`:
 {
   "import": [
     "moonbitlang/async",
-    "moonbitlang/async/socket", 
+    "moonbitlang/async/socket",
     "moonbitlang/async/fs",
+    "moonbitlang/async/io",
     "moonbitlang/async/http",
     "moonbitlang/async/process"
   ]
@@ -92,10 +93,12 @@ async fn timeout_examples() -> Unit {
   try {
     @async.with_timeout(1000, fn() {
       @async.sleep(2000)  // Will timeout
-      "Won't reach here"
+      abort("should not reach here")
     })
   } catch {
     @async.TimeoutError => println("Operation timed out")
+    // should handle other errors here
+    _ => println("Unknown error")
   }
 
   // Return None after timeout
@@ -207,8 +210,8 @@ async fn file_operations() -> Unit {
   {
     let file = @fs.open("test.txt", mode=ReadOnly)
     defer file.close()
-
-    let content = file.read_all()
+    // encoding is included in standard library so you can use it directly
+    let content = @encoding/utf8.decode(file.read_all())
     println("File content: \{content}")
     println("File size: \{file.size()} bytes")
   }
@@ -227,15 +230,16 @@ async fn advanced_file_ops() -> Unit {
   defer file.close()
 
   // Write data
-  file.write("Line 1\nLine 2\nLine 3\n")
+  file.write_string("Line 1\nLine 2\nLine 3\n",encoding=@io.UTF8)
 
   // Move file pointer
-  file.seek(0, mode=FromStart)
+  let _ = file.seek(0, mode=@fs.FromStart)
 
   // Chunked reading
   let buf = FixedArray::make(1024, b'0')
   while file.read(buf) is n && n > 0 {
-    let data = buf[:n]
+    let arr = Array::from_fixed_array(buf)
+    let _ = arr[:n]
     println("Read \{n} bytes")
   }
 }
