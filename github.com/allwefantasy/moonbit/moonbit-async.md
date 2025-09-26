@@ -45,6 +45,8 @@ async fn main {
 
 **Key Change**: Now use `async fn main` directly, no longer need `@async.with_event_loop` wrapper.
 
+**Note**: MoonBit doesn't require an `await` keyword. When you call async functions within an `async fn`, the language automatically handles asynchronous execution and suspension points, making the code cleaner and more readable than traditional async/await patterns.
+
 ## Asynchronous Operations Basics
 
 ### Core Async Functions
