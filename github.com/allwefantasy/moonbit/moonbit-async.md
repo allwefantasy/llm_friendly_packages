@@ -227,6 +227,7 @@ async fn advanced_file_ops() -> Unit {
 ```moonbit
 ///|
 async fn directory_operations() -> Unit {
+  // Method 1: Using File::as_dir()
   let dir_file = @fs.open(".", mode=ReadOnly)
   let dir = dir_file.as_dir()
   defer dir.close()
@@ -237,6 +238,77 @@ async fn directory_operations() -> Unit {
   for file in files {
     println("File: \{file}")
   }
+}
+
+///|
+async fn directory_operations_advanced() -> Unit {
+  // Method 2: Direct directory operations
+  let files = @fs.readdir(".", sort=true, include_hidden=false)
+  for file in files {
+    println("File: \{file}")
+  }
+  
+  // Create directory
+  @fs.mkdir("new_dir", permission=0o755)
+  
+  // Remove directory (recursive)
+  @fs.rmdir("old_dir", recursive=true)
+  
+  // Check file properties
+  if @fs.exists("config.txt") {
+    println("Config file exists")
+  }
+  
+  if @fs.can_read("data.txt") {
+    println("Can read data file")
+  }
+  
+  // Get absolute path
+  let abs_path = @fs.realpath("./relative/path")
+  println("Absolute path: \{abs_path}")
+}
+```
+
+### File System Utilities
+
+```moonbit
+///|
+async fn file_system_utilities() -> Unit {
+  let path = "example.txt"
+  
+  // Check file existence and permissions
+  if @fs.exists(path) {
+    println("File exists")
+    
+    if @fs.can_read(path) {
+      println("Can read file")
+    }
+    
+    if @fs.can_write(path) {
+      println("Can write to file")
+    }
+    
+    if @fs.can_execute(path) {
+      println("Can execute file")
+    }
+  }
+  
+  // Get file type
+  let file_kind = @fs.kind(path)
+  match file_kind {
+    Regular => println("Regular file")
+    Directory => println("Directory")
+    SymLink => println("Symbolic link")
+    _ => println("Other file type")
+  }
+  
+  // Convenient file operations
+  let content = @fs.read_file("input.txt")
+  @fs.write_file("output.txt", content, create=0o644)
+  
+  // Text file operations with encoding
+  let text = @fs.read_text_file("text.txt", encoding=UTF8)
+  @fs.write_text_file("new_text.txt", text, encoding=UTF8, create=0o644)
 }
 ```
 
@@ -310,6 +382,83 @@ async fn udp_example() -> Unit {
   let (n, from_addr) = sock.recv_from(buf)
   let data = buf[:n]
   println("Received data from \{from_addr}: \{data}")
+}
+```
+
+## TLS/SSL Support
+
+### TLS Client
+
+```moonbit
+///|
+async fn tls_client_example() -> Unit {
+  // Connect to HTTPS server
+  let tcp_conn = @socket.TCP::new()
+  defer tcp_conn.close()
+  
+  tcp_conn.connect(@socket.Addr::parse("example.com:443"))
+  
+  // Create TLS connection
+  let tls_conn = @tls.TLS::client(
+    tcp_conn,
+    verify=true,
+    host="example.com",
+    sni=true
+  )
+  defer {
+    @async.with_timeout_opt(5000, fn() {
+      tls_conn.shutdown()  // Graceful TLS shutdown
+    }) |> ignore
+    tls_conn.close()
+  }
+  
+  // Send HTTP request over TLS
+  tls_conn.write("GET / HTTP/1.1\r\nHost: example.com\r\n\r\n")
+  
+  // Read response
+  let buf = FixedArray::make(4096, b'0')
+  let n = tls_conn.read(buf)
+  let response = buf[:n]
+  println("HTTPS Response: \{response}")
+}
+```
+
+### TLS Server (Testing Only)
+
+```moonbit
+///|
+async fn tls_server_example() -> Unit {
+  // WARNING: This API is for testing only
+  let tcp_server = @socket.TCPServer::new(@socket.Addr::parse("0.0.0.0:8443"))
+  defer tcp_server.close()
+  
+  @async.with_task_group(fn(group) {
+    for {
+      let (tcp_conn, addr) = tcp_server.accept()
+      println("TLS connection from: \{addr}")
+      
+      group.spawn_bg(allow_failure=true, fn() {
+        defer tcp_conn.close()
+        
+        let tls_conn = @tls.TLS::server(
+          tcp_conn,
+          private_key_file="server.key",
+          private_key_type=PEM,
+          certificate_file="server.crt", 
+          certificate_type=PEM
+        )
+        defer {
+          @async.with_timeout_opt(5000, fn() {
+            tls_conn.shutdown()
+          }) |> ignore
+          tls_conn.close()
+        }
+        
+        // Handle TLS connection
+        handle_tls_request(tls_conn)
+      })
+    }
+  })
 }
 ```
 
@@ -648,6 +797,87 @@ async fn queue_communication() -> Unit {
     })
   })
 }
+
+///|
+async fn advanced_queue_patterns() -> Unit {
+  @async.with_task_group(fn(group) {
+    let request_queue = @async.Queue::new()
+    let response_queue = @async.Queue::new()
+    
+    // Worker pool pattern
+    for worker_id in 0..3 {
+      group.spawn_bg(fn() {
+        while request_queue.get() is Some(task) {
+          let result = process_task(task)
+          response_queue.put("Worker \{worker_id}: \{result}")
+        }
+      })
+    }
+    
+    // Task dispatcher
+    group.spawn_bg(fn() {
+      for i in 0..10 {
+        request_queue.put("Task \{i}")
+      }
+      request_queue.close()
+    })
+    
+    // Result collector
+    let mut completed = 0
+    while response_queue.get() is Some(result) {
+      println("Completed: \{result}")
+      completed += 1
+      if completed >= 10 {
+        break
+      }
+    }
+  })
+}
+```
+
+### Buffered IO Operations
+
+```moonbit
+///|
+async fn buffered_io_examples() -> Unit {
+  let file = @fs.open("large_file.txt", mode=ReadOnly)
+  defer file.close()
+  
+  // Buffered reader for efficient reading
+  let reader = @io.BufferedReader::new(file)
+  
+  // Search for patterns
+  let pattern_pos = reader.find("target_pattern")
+  println("Pattern found at position: \{pattern_pos}")
+  
+  // Get specific bytes without advancing stream
+  let first_byte = reader[0]
+  let slice = reader[10:20]
+  
+  // Drop unwanted data
+  reader.drop(100)
+  
+  // Continue reading normally
+  let remaining = reader.read_all()
+  println("Remaining content: \{remaining}")
+}
+
+///|
+async fn buffered_writer_example() -> Unit {
+  let file = @fs.create("output.txt", permission=0o644)
+  defer file.close()
+  
+  let writer = @io.BufferedWriter::new(file)
+  defer writer.flush()  // Ensure all data is written
+  
+  // Efficient writing with buffering
+  for i in 0..1000 {
+    writer.write("Line \{i}\n")
+  }
+  
+  // Manual flush if needed
+  writer.flush()
+}
 ```
 
 ## Performance Optimization and Best Practices
@@ -818,6 +1048,57 @@ async fn performance_measurement() -> Unit {
 }
 ```
 
+## API Coverage Summary
+
+This guide covers the complete MoonBit async library API:
+
+### Core Async Operations
+- ✅ `@async.sleep`, `@async.pause`, `@async.now`
+- ✅ `@async.with_timeout`, `@async.with_timeout_opt`
+- ✅ `@async.protect_from_cancel`
+- ✅ `@async.retry` with different strategies
+- ✅ `@async.with_task_group`, task management
+
+### File System (`@fs`)
+- ✅ Basic operations: `open`, `create`, `read`, `write`, `remove`
+- ✅ Directory operations: `readdir`, `mkdir`, `rmdir`, `opendir`
+- ✅ File utilities: `exists`, `can_read`, `can_write`, `can_execute`
+- ✅ Path operations: `realpath`, `kind`
+- ✅ Convenience functions: `read_file`, `write_file`, `read_text_file`, `write_text_file`
+
+### Networking (`@socket`)
+- ✅ TCP: `TCPServer`, `TCP` client/server operations
+- ✅ UDP: `UDP` socket operations
+- ✅ Address parsing and DNS resolution
+
+### TLS Support (`@tls`)
+- ✅ TLS client connections with certificate verification
+- ✅ TLS server connections (testing API)
+- ✅ Graceful TLS shutdown
+
+### HTTP Support (`@http`)
+- ✅ HTTP client: `get`, `post` requests
+- ✅ HTTP server: `ServerConnection`, request handling
+- ✅ HTTP parsing and response generation
+
+### IO Abstractions (`@io`)
+- ✅ `Reader` and `Writer` traits
+- ✅ `BufferedReader` with search and slicing capabilities
+- ✅ `BufferedWriter` for efficient writing
+
+### Process Management (`@process`)
+- ✅ Process execution with `run`
+- ✅ Process communication with pipes
+- ✅ Environment variable handling
+
+### Inter-task Communication (`@async.Queue`)
+- ✅ Async queue for producer-consumer patterns
+- ✅ Worker pool implementations
+
+### Pipe Operations (`@pipe`)
+- ✅ Standard IO: `stdin`, `stdout`, `stderr`
+- ✅ Pipe creation and communication
+
 ## Summary
 
 The MoonBit async library provides powerful and safe asynchronous programming capabilities through structured concurrency:
@@ -825,6 +1106,6 @@ The MoonBit async library provides powerful and safe asynchronous programming ca
 - **Simple**: Use `async fn main` directly, no complex event loop setup required
 - **Safe**: Structured concurrency ensures no resource leaks and proper error propagation
 - **Efficient**: Cooperative multitasking model without locks
-- **Complete**: Covers all IO needs including files, networking, HTTP, and processes
+- **Complete**: Covers all IO needs including files, networking, HTTP, TLS, and processes
 
 Mastering task group usage patterns and error handling mechanisms is key to successfully using this library. Through proper task decomposition and resource management, you can build high-performance, maintainable asynchronous applications.
