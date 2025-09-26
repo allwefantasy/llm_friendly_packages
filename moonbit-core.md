@@ -7,7 +7,7 @@ MoonBit Core 是 MoonBit 语言的标准库，提供了编程中常用的核心�
 MoonBit Core 标准库包含以下主要功能模块：
 
 - **基础类型与操作**: builtin, string, array, bytes 等
-- **数据结构**: hashmap, list, deque, queue, priority_queue 等
+- **数据结构**: hashmap, list, deque, queue, priority_queue 等  
 - **数学运算**: math, bigint, rational 等
 - **数据转换**: json, strconv, encoding 等
 - **函数式编程**: option, result, iter 等
@@ -46,10 +46,10 @@ test "基础断言" {
 test "inspect 用法" {
   let value = 42
   inspect(value, content="42")
-
+  
   let list = [1, 2, 3]
   inspect(list, content="[1, 2, 3]")
-
+  
   let result : Result[Int, String] = Ok(100)
   inspect(result, content="Ok(100)")
 }
@@ -119,19 +119,19 @@ string 包提供了丰富的字符串操作功能。
 ///|
 test "字符串基础操作" {
   let s = "Hello, MoonBit!"
-
+  
   // 长度和判空
   inspect(s.length(), content="15")
   inspect(s.is_empty(), content="false")
-
+  
   // 字符访问
   inspect(s[0], content="72") // 'H' 的 ASCII 值
   inspect(s.get_char(0), content="Some('H')")
-
+  
   // 子字符串
   let substr = s[0:5]
   inspect(substr, content="Hello")
-
+  
   // 查找
   inspect(s.contains("Moon"), content="true")
   inspect(s.index_of("Moon"), content="Some(7)")
@@ -144,20 +144,20 @@ test "字符串基础操作" {
 ///|
 test "字符串转换" {
   let s = "  Hello World  "
-
+  
   // 去除空白
   inspect(s.trim(), content="Hello World")
   inspect(s.trim_start(), content="Hello World  ")
   inspect(s.trim_end(), content="  Hello World")
-
+  
   // 大小写转换
   inspect(s.to_upper(), content="  HELLO WORLD  ")
   inspect(s.to_lower(), content="  hello world  ")
-
+  
   // 分割
   let parts = "a,b,c".split(",")
   inspect(parts, content="[\"a\", \"b\", \"c\"]")
-
+  
   // 替换
   let replaced = "hello world".replace("world", "MoonBit")
   inspect(replaced, content="hello MoonBit")
@@ -173,9 +173,9 @@ test "字符串插值" {
   let version = 1.0
   let message = "Hello \{name} v\{version}"
   inspect(message, content="Hello MoonBit v1.0")
-
+  
   // 多行字符串
-  let multi_line =
+  let multi_line = 
     #|第一行
     #|第二行
     #|第三行
@@ -193,10 +193,10 @@ test "StringBuilder 使用" {
   sb.write_string("Hello")
   sb.write_char(' ')
   sb.write_string("World")
-
+  
   let result = sb.to_string()
   inspect(result, content="Hello World")
-
+  
   // 链式调用
   let sb2 = StringBuilder::new()
   sb2..write_string("A")..write_string("B")..write_string("C")
@@ -224,7 +224,7 @@ test "数组创建" {
   // 从迭代器创建
   let arr3 = Array::from_iter("hello".iter())
   inspect(arr3, content="['h', 'e', 'l', 'l', 'o']")
-
+  
   // 重复元素
   let arr4 = Array::make(3, "x")
   inspect(arr4, content="[\"x\", \"x\", \"x\"]")
@@ -241,7 +241,7 @@ test "数组操作" {
   // 过滤和映射
   let evens = nums.filter(x => x % 2 == 0)
   inspect(evens, content="[2, 4]")
-
+  
   let doubled = nums.map(x => x * 2)
   inspect(doubled, content="[2, 4, 6, 8, 10]")
 
@@ -252,7 +252,7 @@ test "数组操作" {
   // 折叠操作
   let sum = nums.fold(init=0, (acc, x) => acc + x)
   inspect(sum, content="15")
-
+  
   let product = nums.fold(init=1, (acc, x) => acc * x)
   inspect(product, content="120")
 }
@@ -264,20 +264,20 @@ test "数组操作" {
 ///|
 test "数组查找" {
   let arr = [10, 20, 30, 40, 50]
-
+  
   // 索引访问
   inspect(arr[0], content="10")
   inspect(arr.get(0), content="Some(10)")
   inspect(arr.get(10), content="None")
-
+  
   // 查找元素
   inspect(arr.contains(30), content="true")
   inspect(arr.index_of(30), content="Some(2)")
-
+  
   // 第一个和最后一个
   inspect(arr.first(), content="Some(10)")
   inspect(arr.last(), content="Some(50)")
-
+  
   // 查找满足条件的元素
   let found = arr.find(x => x > 25)
   inspect(found, content="Some(30)")
@@ -319,10 +319,10 @@ test "FixedArray 使用" {
   let fixed = FixedArray::make(5, 0)
   fixed[0] = 10
   fixed[1] = 20
-
+  
   inspect(fixed.length(), content="5")
   inspect(fixed[0], content="10")
-
+  
   // 转换为动态数组
   let dynamic = fixed.to_array()
   inspect(dynamic, content="[10, 20, 0, 0, 0]")
@@ -339,15 +339,15 @@ test "Bytes 操作" {
   // 创建字节数组
   let b1 : Bytes = b"hello"
   let b2 : Bytes = [0x48, 0x65, 0x6c, 0x6c, 0x6f] // "Hello"
-
+  
   // 字节访问
   inspect(b1[0], content="104") // 'h'
   inspect(b1.length(), content="5")
-
+  
   // 转换
   let s = String::from_bytes(b1)
   inspect(s, content="hello")
-
+  
   // 字节视图
   let view = b1[1:4] // "ell"
   inspect(view.length(), content="3")
@@ -366,20 +366,20 @@ hashmap 提供了基于 Robin Hood 哈希表的可变哈希映射。
 ///|
 test "HashMap 基础操作" {
   let map : @hashmap.HashMap[String, Int] = @hashmap.new()
-
+  
   // 设置和获取
   map.set("apple", 5)
   map.set("banana", 3)
   map.set("orange", 8)
-
+  
   inspect(map.get("apple"), content="Some(5)")
   inspect(map.get("grape"), content="None")
   inspect(map.get_or_default("grape", 0), content="0")
-
+  
   // 检查存在
   inspect(map.contains("banana"), content="true")
   inspect(map.contains("grape"), content="false")
-
+  
   // 大小
   inspect(map.length(), content="3")
   inspect(map.is_empty(), content="false")
@@ -392,11 +392,11 @@ test "HashMap 基础操作" {
 ///|
 test "HashMap 高级操作" {
   let map = @hashmap.of([("a", 1), ("b", 2), ("c", 3)])
-
+  
   // 删除
   map.remove("b")
   inspect(map.contains("b"), content="false")
-
+  
   // 迭代
   let keys = []
   let values = []
@@ -404,11 +404,11 @@ test "HashMap 高级操作" {
     keys.push(k)
     values.push(v)
   })
-
+  
   // 转换为数组
   let pairs = map.to_array()
   inspect(pairs.length(), content="2")
-
+  
   // 清空
   map.clear()
   inspect(map.is_empty(), content="true")
@@ -425,19 +425,19 @@ test "List 操作" {
   // 创建链表
   let list1 = @list.of([1, 2, 3, 4, 5])
   let list2 = @list.Cons(0, list1) // 前置元素
-
+  
   // 基础操作
   inspect(list1.length(), content="5")
   inspect(list1.head(), content="Some(1)")
   inspect(list1.tail().unwrap().head(), content="Some(2)")
-
+  
   // 函数式操作
   let doubled = list1.map(x => x * 2)
   inspect(doubled.to_array(), content="[2, 4, 6, 8, 10]")
-
+  
   let evens = list1.filter(x => x % 2 == 0)
   inspect(evens.to_array(), content="[2, 4]")
-
+  
   let sum = list1.fold(init=0, (acc, x) => acc + x)
   inspect(sum, content="15")
 }
@@ -449,19 +449,19 @@ test "List 操作" {
 ///|
 test "Deque 操作" {
   let dq = @deque.new()
-
+  
   // 前端操作
   dq.push_front(2)
   dq.push_front(1)
-
+  
   // 后端操作
   dq.push_back(3)
   dq.push_back(4)
-
+  
   inspect(dq.length(), content="4")
   inspect(dq.front(), content="Some(1)")
   inspect(dq.back(), content="Some(4)")
-
+  
   // 弹出操作
   inspect(dq.pop_front(), content="Some(1)")
   inspect(dq.pop_back(), content="Some(4)")
@@ -475,15 +475,15 @@ test "Deque 操作" {
 ///|
 test "Queue 操作" {
   let q = @queue.new()
-
+  
   // 入队
   q.push(1)
   q.push(2)
   q.push(3)
-
+  
   inspect(q.length(), content="3")
   inspect(q.peek(), content="Some(1)")
-
+  
   // 出队
   inspect(q.pop(), content="Some(1)")
   inspect(q.pop(), content="Some(2)")
@@ -497,16 +497,16 @@ test "Queue 操作" {
 ///|
 test "PriorityQueue 操作" {
   let pq = @priority_queue.new()
-
+  
   // 插入元素（默认最大堆）
   pq.push(3)
   pq.push(1)
   pq.push(4)
   pq.push(2)
-
+  
   inspect(pq.length(), content="4")
   inspect(pq.peek(), content="Some(4)") // 最大值
-
+  
   // 弹出元素
   inspect(pq.pop(), content="Some(4)")
   inspect(pq.pop(), content="Some(3)")
@@ -521,18 +521,18 @@ test "PriorityQueue 操作" {
 test "Set 操作" {
   let set1 = @set.of([1, 2, 3, 4])
   let set2 = @set.of([3, 4, 5, 6])
-
+  
   // 基础操作
   inspect(set1.contains(3), content="true")
   inspect(set1.size(), content="4")
-
+  
   // 集合运算
   let union = set1.union(set2)
   inspect(union.to_array(), content="[1, 2, 3, 4, 5, 6]")
-
+  
   let intersection = set1.intersection(set2)
   inspect(intersection.to_array(), content="[3, 4]")
-
+  
   let difference = set1.difference(set2)
   inspect(difference.to_array(), content="[1, 2]")
 }
@@ -546,12 +546,12 @@ test "SortedSet 操作" {
   sorted_set.insert(1)
   sorted_set.insert(4)
   sorted_set.insert(2)
-
+  
   // 有序迭代
   let values = []
   sorted_set.each(fn(x) { values.push(x) })
   inspect(values, content="[1, 2, 3, 4]")
-
+  
   // 范围查询
   let range = sorted_set.range(2, 4)
   inspect(range.to_array(), content="[2, 3]")
@@ -571,13 +571,13 @@ math 包提供了常用的数学函数。
 test "基础数学函数" {
   // 数学常量
   inspect(@math.PI, content="3.141592653589793")
-
+  
   // 舍入函数
   inspect(@math.round(3.7), content="4")
   inspect(@math.ceil(3.2), content="4")
   inspect(@math.floor(3.7), content="3")
   inspect(@math.trunc(-3.7), content="-3")
-
+  
   // 绝对值和符号
   inspect(@math.abs(-5.0), content="5")
   inspect(@math.sign(-3.0), content="-1")
@@ -595,7 +595,7 @@ test "指数对数函数" {
   inspect(@math.exp(1.0), content="2.718281828459045")
   inspect(@math.exp2(3.0), content="8")
   inspect(@math.expm1(1.0), content="1.718281828459045")
-
+  
   // 对数函数
   inspect(@math.ln(@math.E), content="1")
   inspect(@math.log2(8.0), content="3")
@@ -613,12 +613,12 @@ test "三角函数" {
   inspect(@math.sin(@math.PI / 2.0), content="1")
   inspect(@math.cos(0.0), content="1")
   inspect(@math.tan(@math.PI / 4.0), content="0.9999999999999999")
-
+  
   // 反三角函数
   inspect(@math.asin(1.0), content="1.5707963267948966")
   inspect(@math.acos(1.0), content="0")
   inspect(@math.atan(1.0), content="0.7853981633974483")
-
+  
   // 双曲函数
   inspect(@math.sinh(0.0), content="0")
   inspect(@math.cosh(0.0), content="1")
@@ -634,15 +634,15 @@ test "幂函数和根函数" {
   // 幂运算
   inspect(@math.pow(2.0, 3.0), content="8")
   inspect(@math.pow(9.0, 0.5), content="3")
-
+  
   // 平方根
   inspect(@math.sqrt(16.0), content="4")
   inspect(@math.sqrt(2.0), content="1.4142135623730951")
-
+  
   // 立方根
   inspect(@math.cbrt(8.0), content="2")
   inspect(@math.cbrt(27.0), content="3")
-
+  
   // 平方
   inspect(@math.square(5.0), content="25")
 }
@@ -656,15 +656,15 @@ test "BigInt 操作" {
   // 创建大整数
   let a = @bigint.from_string("123456789012345678901234567890")
   let b = @bigint.from_int(999999999)
-
+  
   // 基础运算
   let sum = a + b
   let product = a * b
-
+  
   // 比较
   inspect(a > b, content="true")
   inspect(a.compare(b), content="1")
-
+  
   // 转换
   inspect(b.to_string(), content="999999999")
   inspect(@bigint.from_int(42).to_int(), content="Some(42)")
@@ -679,15 +679,15 @@ test "Rational 操作" {
   // 创建有理数
   let r1 = @rational.new(3, 4)    // 3/4
   let r2 = @rational.new(1, 2)    // 1/2
-
+  
   // 运算
   let sum = r1 + r2               // 3/4 + 1/2 = 5/4
   let product = r1 * r2           // 3/4 * 1/2 = 3/8
-
+  
   // 转换
   inspect(r1.to_double(), content="0.75")
   inspect(sum.to_string(), content="5/4")
-
+  
   // 约分
   let r3 = @rational.new(6, 8)    // 6/8 = 3/4
   inspect(r3.to_string(), content="3/4")
@@ -708,10 +708,10 @@ test "JSON 解析生成" {
   // 验证 JSON
   inspect(@json.valid("{\"key\": 42}"), content="true")
   inspect(@json.valid("invalid"), content="false")
-
+  
   // 解析 JSON
   let json = @json.parse("{\"name\": \"MoonBit\", \"version\": 1.0}")
-
+  
   // 美化输出
   let pretty = json.stringify(indent=2)
   inspect(
@@ -784,15 +784,15 @@ struct Person {
 
 test "类型安全 JSON 转换" {
   let person = Person::{ name: "Alice", age: 30, email: Some("alice@example.com") }
-
+  
   // 转换为 JSON
   let json = person.to_json()
   let json_string = json.stringify()
-
+  
   // 从 JSON 转换回来
   let parsed_json = @json.parse(json_string)
   let restored_person = Person::from_json(parsed_json)
-
+  
   match restored_person {
     Ok(p) => {
       inspect(p.name, content="Alice")
@@ -815,18 +815,18 @@ test "字符串解析" {
   // 解析布尔值
   let b = @strconv.parse_bool("true")
   inspect(b, content="true")
-
+  
   // 解析整数
   let i1 = @strconv.parse_int("1234567")
   inspect(i1, content="1234567")
-
+  
   // 指定进制解析
   let i2 = @strconv.parse_int("101", base=2)
   inspect(i2, content="5")
-
+  
   let i3 = @strconv.parse_int("FF", base=16)
   inspect(i3, content="255")
-
+  
   // 解析浮点数
   let d = @strconv.parse_double("123.4567")
   inspect(d, content="123.4567")
@@ -841,10 +841,10 @@ test "通用解析" {
   // 使用 FromStr trait 的通用解析
   let a : Int = @strconv.parse("123")
   inspect(a, content="123")
-
+  
   let b : Bool = @strconv.parse("false")
   inspect(b, content="false")
-
+  
   let c : Double = @strconv.parse("3.14159")
   inspect(c, content="3.14159")
 }
@@ -858,7 +858,7 @@ test "格式化输出" {
   // 整数格式化
   inspect(@strconv.format_int(255, base=16), content="ff")
   inspect(@strconv.format_int(255, base=2), content="11111111")
-
+  
   // 浮点数格式化
   inspect(@strconv.format_double(3.14159, precision=2), content="3.14")
   inspect(@strconv.format_double(1234.5, scientific=true), content="1.2345e+03")
@@ -871,18 +871,18 @@ test "格式化输出" {
 ///|
 test "UTF-8 编码解码" {
   let text = "Hello, 世界! 🌍"
-
+  
   // 编码为字节数组
   let bytes = @encoding/utf8.encode(text)
   inspect(bytes.length(), content="16")
-
+  
   // 解码回字符串
   let decoded = @encoding/utf8.decode(bytes)
   inspect(decoded, content="Hello, 世界! 🌍")
-
+  
   // 验证 UTF-8
   inspect(@encoding/utf8.valid(bytes), content="true")
-
+  
   // 处理无效字节
   let invalid_bytes = b"\xFF\xFE"
   match @encoding/utf8.decode(invalid_bytes) {
@@ -904,7 +904,7 @@ test "UTF-8 编码解码" {
 ///|
 test "迭代器基础操作" {
   let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-
+  
   // 链式操作
   let result = numbers
     .iter()
@@ -912,13 +912,13 @@ test "迭代器基础操作" {
     .map(x => x * x)            // 平方
     .take(3)                    // 取前3个
     .collect()
-
+  
   inspect(result, content="[4, 16, 36]")
-
+  
   // 折叠操作
   let sum = numbers.iter().fold(init=0, (acc, x) => acc + x)
   inspect(sum, content="55")
-
+  
   // 查找操作
   let found = numbers.iter().find(x => x > 7)
   inspect(found, content="Some(8)")
@@ -931,15 +931,15 @@ test "迭代器基础操作" {
 ///|
 test "高级迭代器操作" {
   let words = ["apple", "banana", "cherry", "date"]
-
+  
   // 枚举
   let enumerated = words.iter().enumerate().collect()
   inspect(enumerated, content="[(0, \"apple\"), (1, \"banana\"), (2, \"cherry\"), (3, \"date\")]")
-
+  
   // 分组
   let grouped = words.iter().group_by(w => w.length()).collect()
   // 按长度分组
-
+  
   // 压缩
   let numbers = [1, 2, 3, 4]
   let zipped = words.iter().zip(numbers.iter()).collect()
@@ -956,14 +956,14 @@ test "无限迭代器" {
   let fib = @iter.unfold((0, 1), fn((a, b)) {
     Some((a, (b, a + b)))
   })
-
+  
   let first_10_fib = fib.take(10).collect()
   inspect(first_10_fib, content="[0, 1, 1, 2, 3, 5, 8, 13, 21, 34]")
-
+  
   // 重复元素
   let repeated = @iter.repeat(42).take(5).collect()
   inspect(repeated, content="[42, 42, 42, 42, 42]")
-
+  
   // 范围
   let range = @iter.range(1, 6).collect()
   inspect(range, content="[1, 2, 3, 4, 5]")
@@ -978,22 +978,22 @@ test "无限迭代器" {
 ///|
 test "随机数生成" {
   let rng = @random.new()
-
+  
   // 生成随机整数
   let random_int = rng.int()
   let bounded_int = rng.int_range(1, 100) // 1-99
-
+  
   // 生成随机浮点数
   let random_double = rng.double() // 0.0-1.0
   let bounded_double = rng.double_range(0.0, 10.0)
-
+  
   // 生成随机布尔值
   let random_bool = rng.bool()
-
+  
   // 从数组中随机选择
   let choices = ["red", "green", "blue"]
   let random_choice = rng.choose(choices)
-
+  
   // 打乱数组
   let numbers = [1, 2, 3, 4, 5]
   rng.shuffle(numbers)
@@ -1008,19 +1008,19 @@ test "随机数生成" {
 test "引用类型" {
   // 创建可变引用
   let counter = @ref.new(0)
-
+  
   // 读取值
   inspect(counter.val, content="0")
-
+  
   // 修改值
   counter.val = 42
   inspect(counter.val, content="42")
-
+  
   // 原子操作
   let old_value = counter.swap(100)
   inspect(old_value, content="42")
   inspect(counter.val, content="100")
-
+  
   // 比较并交换
   let success = counter.compare_and_swap(100, 200)
   inspect(success, content="true")
@@ -1043,7 +1043,7 @@ test "属性测试" {
       reversed_twice == list
     }
   )
-
+  
   // 测试加法交换律
   @quickcheck.test(
     "addition is commutative",
@@ -1051,7 +1051,7 @@ test "属性测试" {
       a + b == b + a
     }
   )
-
+  
   // 测试字符串长度
   @quickcheck.test(
     "string concatenation length",
@@ -1074,18 +1074,18 @@ test "整数类型" {
   // 基础整数类型
   let i : Int = 42
   let u : UInt = 42U
-
+  
   // 64位整数
   let i64 : Int64 = 42L
   let u64 : UInt64 = 42UL
-
+  
   // 16位整数
   let i16 : Int16 = 42S
   let u16 : UInt16 = 42US
-
+  
   // 字节类型
   let b : Byte = b'A'
-
+  
   // 类型转换
   inspect(i.to_int64(), content="42L")
   inspect(i64.to_int(), content="42")
@@ -1100,12 +1100,12 @@ test "整数类型" {
 test "浮点类型" {
   let f : Float = 3.14
   let d : Double = 3.14159265359
-
+  
   // 特殊值
   inspect(Double::infinity(), content="inf")
   inspect(Double::neg_infinity(), content="-inf")
   inspect(Double::nan().is_nan(), content="true")
-
+  
   // 精度比较
   let a = 0.1 + 0.2
   let b = 0.3
@@ -1139,14 +1139,14 @@ test "错误处理" {
   // 使用 try? 转换为 Result
   let result1 = try? risky_operation("hello")
   inspect(result1, content="Ok(\"处理成功: hello\")")
-
+  
   let result2 = try? risky_operation("")
   match result2 {
     Ok(_) => panic()
     Err(MyError::InvalidInput(msg)) => inspect(msg, content="输入不能为空")
     Err(_) => panic()
   }
-
+  
   // 使用 try-catch 处理
   let result3 = risky_operation("error") catch {
     MyError::ParseError => "解析错误"
@@ -1163,10 +1163,10 @@ test "错误处理" {
 ///|
 test "调试工具" {
   let data = [1, 2, 3, 4, 5]
-
+  
   // 使用 inspect 调试
   inspect(data, content="[1, 2, 3, 4, 5]")
-
+  
   // 使用 @json.inspect 查看复杂结构
   let complex_data = {
     "name": "MoonBit",
@@ -1174,7 +1174,7 @@ test "调试工具" {
     "features": ["fast", "safe", "simple"]
   }
   @json.inspect(complex_data, content="{\"name\": \"MoonBit\", \"version\": 1, \"features\": [\"fast\", \"safe\", \"simple\"]}")
-
+  
   // 条件调试
   let debug = true
   if debug {
@@ -1196,11 +1196,11 @@ test "内存优化" {
     sb.write_string("item \{i}\n")
   }
   let result = sb.to_string()
-
+  
   // 使用 ArrayView 避免复制
   let large_array = Array::makei(10000, i => i)
   let view = large_array[100:200] // 不复制数据
-
+  
   // 预分配容量
   let optimized_array = Array::with_capacity(1000)
   for i in 0..<1000 {
@@ -1215,7 +1215,7 @@ test "内存优化" {
 ///|
 test "函数式优化" {
   let data = Array::makei(10000, i => i)
-
+  
   // 使用迭代器链式操作（惰性求值）
   let result = data
     .iter()
@@ -1223,13 +1223,13 @@ test "函数式优化" {
     .map(x => x * x)
     .take(100)
     .collect()
-
+  
   // 避免中间集合
   let sum = data
     .iter()
     .filter(x => x % 3 == 0)
     .fold(init=0, (acc, x) => acc + x)
-
+  
   inspect(result.length(), content="100")
 }
 ```
@@ -1241,16 +1241,16 @@ test "函数式优化" {
 test "并发模式" {
   // 使用 Ref 进行线程安全的状态管理
   let shared_counter = @ref.new(0)
-
+  
   // 原子操作
   let old_value = shared_counter.swap(10)
   let success = shared_counter.compare_and_swap(10, 20)
-
+  
   // 使用队列进行任务分发
   let task_queue = @queue.new()
   task_queue.push("task1")
   task_queue.push("task2")
-
+  
   while not(task_queue.is_empty()) {
     match task_queue.pop() {
       Some(task) => println("处理任务: \{task}")
@@ -1274,11 +1274,11 @@ test "阶乘函数测试" {
   // 边界条件测试
   inspect(factorial(0), content="1")
   inspect(factorial(1), content="1")
-
+  
   // 正常情况测试
   inspect(factorial(5), content="120")
   inspect(factorial(10), content="3628800")
-
+  
   // 性能测试
   let start_time = @time.now()
   let _ = factorial(20)
@@ -1314,14 +1314,14 @@ fn Calculator::get_result(self : Calculator) -> Double {
 
 test "计算器集成测试" {
   let calc = Calculator::new()
-
+  
   // 测试链式操作
   calc.add(10.0)
   calc.multiply(2.0)
   calc.add(5.0)
-
+  
   inspect(calc.get_result(), content="25")
-
+  
   // 测试重置
   calc.value = 0.0
   calc.add(1.0)
@@ -1349,7 +1349,7 @@ fn load_config(json_str : String) -> Config raise {
 
 test "配置管理" {
   let config_json = "{\"host\": \"localhost\", \"port\": 8080, \"debug\": true, \"max_connections\": 100}"
-
+  
   let config = load_config(config_json)
   inspect(config.host, content="localhost")
   inspect(config.port, content="8080")
@@ -1376,7 +1376,7 @@ test "数据处理管道" {
     { id: 3, name: "Charlie", age: 35, active: true },
     { id: 4, name: "Diana", age: 28, active: true }
   ]
-
+  
   // 数据处理管道
   let active_adults = users
     .iter()
@@ -1384,17 +1384,17 @@ test "数据处理管道" {
     .filter(user => user.age >= 25)
     .map(user => user.name)
     .collect()
-
+  
   inspect(active_adults, content="[\"Alice\", \"Charlie\", \"Diana\"]")
-
+  
   // 统计信息
   let avg_age = users
     .iter()
     .filter(user => user.active)
     .map(user => user.age)
-    .fold(init=0, (sum, age) => sum + age) /
+    .fold(init=0, (sum, age) => sum + age) / 
     users.iter().filter(user => user.active).count()
-
+  
   inspect(avg_age, content="29")
 }
 ```
@@ -1427,13 +1427,13 @@ fn Cache::put[K : Hash + Eq, V](self : Cache[K, V], key : K, value : V) -> Unit 
 
 test "缓存实现" {
   let cache = Cache::new(2)
-
+  
   cache.put("key1", "value1")
   cache.put("key2", "value2")
-
+  
   inspect(cache.get("key1"), content="Some(\"value1\")")
   inspect(cache.get("key2"), content="Some(\"value2\")")
-
+  
   // 超出容量
   cache.put("key3", "value3")
   inspect(cache.data.length(), content="2")
