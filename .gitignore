@@ -3,3 +3,5 @@
 actions/
 output.txt
 filelog.json
+/actions/
+/output.txt
