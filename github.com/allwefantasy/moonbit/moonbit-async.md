@@ -18,13 +18,28 @@ The MoonBit async library provides comprehensive asynchronous IO functionality a
 moon add moonbitlang/async@0.7.0
 ```
 
+**Important**: Add the native target configuration to your project's `moon.mod.json`:
+
+```json
+{
+  "name": "your-project-name",
+  "version": "0.1.0",
+  "deps": {
+    "moonbitlang/async": "0.7.0"
+  },
+  "preferred-target": "native"
+}
+```
+
+The async library currently only supports the native backend. If you encounter compilation errors, try running `moon clean` to switch from the default wasm-gc target to native.
+
 Add required packages to `moon.pkg.json`:
 
 ```json
 {
   "import": [
     "moonbitlang/async",
-    "moonbitlang/async/socket",
+    "moonbitlang/async/socket", 
     "moonbitlang/async/fs",
     "moonbitlang/async/http",
     "moonbitlang/async/process"
