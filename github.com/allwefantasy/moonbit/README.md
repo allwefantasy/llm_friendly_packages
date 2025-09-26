@@ -1192,14 +1192,14 @@ This section contains detailed documentation for specific MoonBit packages and l
 
 ## Async
 
-For asynchronous programming patterns, coroutines, and concurrent execution in MoonBit, see:
+For asynchronous programming patterns, coroutines, and concurrent execution in MoonBit, see (in the same directory of this file):
 [moonbit-async.md](./moonbit-async.md)
 
 This covers async/await patterns, Promise-like constructs, and concurrent programming models available in MoonBit.
 
 ## FFI
 
-For foreign function interface (FFI) support in MoonBit, see:
+For foreign function interface (FFI) support in MoonBit, see (in the same directory of this file):
 [moonbit-ffi.md](./moonbit-ffi.md)
 
 This covers calling C functions from MoonBit, using C libraries, and interoperability with other languages.
