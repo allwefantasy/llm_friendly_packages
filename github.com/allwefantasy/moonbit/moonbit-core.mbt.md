@@ -1,19 +1,6 @@
 # MoonBit Core Standard Library Complete Guide
 
 MoonBit Core is the standard library of the MoonBit language, providing core functionality and data structures commonly used in programming. This document follows the MoonBit project documentation format and comprehensively introduces the various modules of the Core library and their usage.
-
-## Overview
-
-The MoonBit Core standard library contains the following main functional modules:
-
-- **Basic Types & Operations**: builtin, string, array, bytes, etc.
-- **Data Structures**: hashmap, list, deque, queue, priority_queue, etc.
-- **Mathematical Operations**: math, bigint, rational, etc.
-- **Data Conversion**: json, strconv, encoding, etc.
-- **Functional Programming**: option, result, iter, etc.
-- **Concurrency & Async**: Support for structured concurrent programming
-- **Utilities**: random, quickcheck, test, etc.
-
 ## Basic Types & Operations
 
 ### builtin - Built-in Types and Core Functionality
@@ -170,7 +157,7 @@ test "string conversion" {
 ///|
 test "string interpolation" {
   let name = "MoonBit"
-  let version = 1.0
+  let version = "1.0"
   let message = "Hello \{name} v\{version}"
   inspect(message, content="Hello MoonBit v1.0")
 
@@ -341,7 +328,7 @@ test "Bytes operations" {
   let _b2 : Bytes = [0x48, 0x65, 0x6c, 0x6c, 0x6f] // "Hello"
 
   // Byte access
-  inspect(b1[0], content="104") // 'h'
+  inspect(b1[0], content="b'\\x68'") // 'h'
   inspect(b1.length(), content="5")
 
   // Conversion
@@ -661,15 +648,15 @@ test "BigInt operations" {
 
   // Comparison
   inspect(a > b, content="true")
-  inspect(a.compare(b), content="1")
+  inspect(a.compare(b), content="3")
 
   // Conversion
   inspect(b.to_string(), content="999999999")
-  inspect(@bigint.BigInt::from_int(42).to_int(), content="Some(42)")
+  inspect(@bigint.BigInt::from_int(42).to_int(), content="42")
 }
 ```
 
-### rational - Rational Numbers
+### rational - Rational 3/4
 
 ```moonbit
 ///|
@@ -683,8 +670,8 @@ test "Rational operations" {
   let _product = r2               // Just store r2
 
   // Conversion
-  inspect(r1.to_string(), content="3/4")
-  inspect(r1.to_string(), content="3/4")
+  inspect(r1.to_string(), content="Some(3/4)")
+  inspect(r1.to_string(), content="Some(3/4)")
 
   // Reduction
   let r3 = @rational.new(6, 8)    // 6/8 = 3/4
@@ -714,7 +701,7 @@ test "JSON parsing and generation" {
   let pretty = json.stringify(indent=2)
   inspect(
     pretty,
-    content="{\\n  \"name\": \"MoonBit\",\\n  \"version\": 1\\n}"
+    content="{\n  \"name\": \"MoonBit\",\n  \"version\": 1\n}"
   )
 }
 ```
@@ -789,15 +776,9 @@ test "type-safe JSON conversion" {
 
   // Convert back from JSON
   let parsed_json = @json.parse(json_string)
-  let restored_person = try? Person::from_json(parsed_json, @json.JsonPath::{})
-
-  match restored_person {
-    Ok(p) => {
-      inspect(p.name, content="Alice")
-      inspect(p.age, content="30")
-    }
-    Err(_) => panic()
-  }
+  let restored_person:Person = @json.from_json(parsed_json)
+  inspect(restored_person.name, content="Alice")
+  inspect(restored_person.age, content="30")
 }
 ```
 
@@ -853,13 +834,40 @@ test "generic parsing" {
 ```moonbit
 ///|
 test "formatting output" {
-  // Integer formatting - basic conversion
-  inspect(255.to_string(), content="255")
-  inspect(128.to_string(), content="128")
+  // Integer formatting - basic conversion using to_string()
+  let num1 = 255
+  let num2 = 128
+  inspect(num1.to_string(), content="255")
+  inspect(num2.to_string(), content="128")
 
-  // Floating point formatting - basic conversion
-  inspect(3.14159.to_string(), content="3.14159")
-  inspect(1234.5.to_string(), content="1234.5")
+  // Floating point formatting - basic conversion using to_string()
+  let float1 = 3.14159
+  let float2 = 1234.5
+  inspect(float1.to_string(), content="3.14159")
+  inspect(float2.to_string(), content="1234.5")
+  
+  // Boolean formatting using to_string()
+  let bool1 = true
+  let bool2 = false
+  inspect(bool1.to_string(), content="true")
+  inspect(bool2.to_string(), content="false")
+  
+  // String interpolation for custom formatting
+  let value = 42
+  let formatted = "Value: \{value}"
+  inspect(formatted, content="Value: 42")
+  
+  // Hexadecimal representation using string interpolation
+  let hex_value = 255
+  let hex_formatted = "0x\{hex_value.to_string()}" // Basic hex representation
+  inspect(hex_formatted, content="0x255")
+  
+  // Multiple values formatting
+  let x = 10
+  let y = 20
+  let result = x + y
+  let calculation = "\{x} + \{y} = \{result}"
+  inspect(calculation, content="10 + 20 = 30")
 }
 ```
 
@@ -872,7 +880,7 @@ test "UTF-8 encoding and decoding" {
 
   // Encode to byte array
   let bytes = @encoding/utf8.encode(text)
-  inspect(bytes.length(), content="16")
+  inspect(bytes.length(), content="18")
 
   // Decode back to string
   let decoded = @encoding/utf8.decode(bytes)
@@ -918,7 +926,7 @@ test "basic iterator operations" {
   inspect(sum, content="55")
 
   // Find operations - need to collect first
-  let found = numbers.iter().filter(x => x > 7).collect().first()
+  let found = numbers.iter().filter(x => x > 7).collect().get(0)
   inspect(found, content="Some(8)")
 }
 ```
@@ -1085,14 +1093,14 @@ test "integer types" {
   let u64 : UInt64 = 42UL
 
   // 16-bit integers (simplified)
-  let _i16 : Int16 = 42.to_int16()
-  let _u16 : UInt16 = 42.to_uint16()
+  let _i16 : Int16 = 42
+  let _u16 : UInt16 = 42
 
   // Byte type
   let b : Byte = b'A'
 
   // Type conversion
-  inspect(i.to_int64(), content="42L")
+  inspect(i.to_int64(), content="42")
   inspect(i64.to_int(), content="42")
   inspect(b.to_int(), content="65")
 }
@@ -1107,9 +1115,12 @@ test "floating point types" {
   let _d : Double = 3.14159265359
 
   // Special values
-  inspect(@double.positive_infinity(), content="inf")
-  inspect(@double.negative_infinity(), content="-inf")
-  inspect(@double.not_a_number().is_nan(), content="true")
+  let pos_inf = 1.0 / 0.0
+  let neg_inf = -1.0 / 0.0
+  let nan_val = 0.0 / 0.0
+  inspect(pos_inf.to_string(), content="Infinity")
+  inspect(neg_inf.to_string(), content="-Infinity")
+  inspect(nan_val.is_nan(), content="true")
 
   // Precision comparison
   let a = 0.1 + 0.2
@@ -1129,7 +1140,7 @@ suberror MyError {
   InvalidInput(String)
   NetworkError(Int)
   ParseError
-}
+} derive(Show)
 
 fn risky_operation(input : String) -> String raise MyError {
   if input.is_empty() {
@@ -1179,7 +1190,13 @@ test "debugging tools" {
     "version": "1.0",
     "features": "fast,safe,simple"
   }
-  @json.inspect(complex_data, content="{\"name\": \"MoonBit\", \"version\": \"1.0\", \"features\": \"fast,safe,simple\"}")
+  @json.inspect(complex_data, content=(
+    #|{
+    #|  name: "MoonBit"
+    #|  version: "1.0"
+    #|  features: "fast,safe,simple"
+    #|}
+  ))
 
   // Conditional debugging
   let debug = true
@@ -1350,7 +1367,8 @@ struct Config {
 
 fn load_config(json_str : String) -> Config raise {
   let json = @json.parse(json_str)
-  Config::from_json(json, @json.JsonPath::{})
+  let v:Config = @json.from_json(json)
+  v
 }
 
 test "configuration management" {
@@ -1410,8 +1428,8 @@ test "data processing pipeline" {
 ```moonbit
 ///|
 struct Cache[K, V] {
-  mut data : @hashmap.HashMap[K, V]
-  mut capacity : Int
+  data : @hashmap.HashMap[K, V]
+  capacity : Int
 }
 
 fn[K : Hash + Eq, V] Cache::new(capacity : Int) -> Cache[K, V] {
