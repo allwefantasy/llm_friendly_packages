@@ -1193,20 +1193,20 @@ This section contains detailed documentation for specific MoonBit packages and l
 ## Core
 
 For core functionalities and utilities in MoonBit, see (in the same directory of this file):
-[moonbit-core.md](./moonbit-core.mbt.md)
+[moonbit-core.md](./moonbit-core.mbt.md.sub)
 
 This covers fundamental operations, data structures, and essential utilities available in MoonBit.
 
 ## Async
 
 For asynchronous programming patterns, coroutines, and concurrent execution in MoonBit, see (in the same directory of this file):
-[moonbit-async.md](./moonbit-async.mbt.md)
+[moonbit-async.md](./moonbit-async.mbt.md.sub)
 
 This covers async/await patterns, Promise-like constructs, and concurrent programming models available in MoonBit.
 
 ## FFI
 
 For foreign function interface (FFI) support in MoonBit, see (in the same directory of this file):
-[moonbit-ffi.md](./moonbit-ffi.mbt.md)
+[moonbit-ffi.md](./moonbit-ffi.mbt.md.sub)
 
 This covers calling C functions from MoonBit, using C libraries, and interoperability with other languages.
